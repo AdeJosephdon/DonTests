@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonTests WellTests</title>
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+</head>
+<body>
+    <div class="grid-container">
+    <!-- Header -->
+        <header class="header">
+            <div class="menu-icon" onclick="openSidebar()">
+                <span class="material-icons-outlined">
+                    menu
+                </span>
+            </div>
+
+            <div class="header-left"><span class="material-icons-outlined">
+                search
+            </span>
+            </div>
+            <div class="header-right">
+                <span class="material-icons-outlined">
+                    notifications
+                </span>
+                <span class="material-icons-outlined">
+                    email
+                </span>
+                <span class="material-icons-outlined">
+                    account_circle
+                </span>
+            </div>
+        </header>
+    <!-- End of Header -->
+
+    <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-title">
+                <div class="sidebar-brand">
+                    <span class="material-icons-outlined">
+                        grass
+                    </span> DonTests
+                </div>
+                <span class="material-icons-outlined" onclick="closeSidebar()">
+                    close
+                </span>
+            </div>
+
+            <ul class="sidebar-list">
+                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                    insights
+                </span> Welltest Chart</li>
+                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                    assignment
+                </span> Interpretation</li>
+                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                    functions
+                </span> Calculations</li>
+                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                    table_chart
+                </span> WellTest Table</li>
+                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                    lightbulb
+                </span> About WellTest</li>
+                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                    info
+                </span> Information</li>
+            </ul>
+        </aside>
+    <!-- End Sidebar -->
+
+    <!-- Main -->
+        <main class="main-container">
+            <div class="main-title">
+                <div class="sidebar-brand">
+                    <h1></h2><span class="material-icons-outlined">
+                        grass
+                    </span> DonTests</h1>
+                </div>
+
+                <div id="upload-section">
+                    <h2>Upload Excel File</h2>
+                    <form id="excelForm" enctype="multipart/form-data">
+                        <input type="file" id="fileInput" accept=".xlsx, .xls">
+                    </form>
+                </div>
+
+                <div id="upload-section">
+                    <h2>Select Test Type</h2>
+                    <div class="dropdown">
+                    <label for="tests">Choose a Welltest:  </label>
+                    
+                    <select id="tests">
+                        <option value="select">Select a Test</option>
+                        <option value="dropdown">Dropdown Test</option>
+                        <option value="build_up">Build Up Test</option>
+                        <option value="fall_off">Fall Off Test</option>
+                        <option value="injection">Injection Test</option>
+                    </select>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="charts">
+                <div class="charts-card">
+                    <h2 class="chart-title">Buildup well Test</h2>
+                    <div id="chart-container"></div> 
+                    <!-- <div id="chart-containe"></div>  -->
+                </div>
+            </div>
+
+        </main>
+    <!-- End main -->
+
+
+    <!-- Scripts -->
+    <!-- D3 charts -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Script that allows excell file to be uploaded and read -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+    <!-- Javascript -->
+    <script src="script.js"></script>
+</body>
+</html>
