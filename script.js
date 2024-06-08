@@ -16,112 +16,6 @@ function closeSidebar() {
 }
 
 
-
-// d3.select("#chart-containe").attr("name", "fred")                                  
-
-// Line chart (Start)
-
-// Set dimensions and margins for the chart
-const margin = {top: 70, right:30, bottom: 40, left: 80};
-const width = 1200 - margin.left - margin.right;
-const height = 500 - margin.top -margin.bottom;
-
-// Set up the x and y scales
-// 
-// const x = d3.scaleTime()
-//     .range([0, width]);
-
-// const y = d3.scaleLinear()
-//     .range([height, 0]);
-// 
-
-const x = [1, 2, 3, 4];
-const y = [1, 2, 3, 4];
-
-// Set up the x and y scales
-const xScale = d3.scaleLog()
-    .domain([1, d3.max(x)])
-    .range([0, width]);
-
-const yScale = d3.scaleLinear()
-    .domain([0, d3.max(y)])
-    .range([height, 0]);
-
-    // Create axes
-const xAxis = d3.axisBottom(xScale)
-    .ticks(10, d3.format(",d"));
-const yAxis = d3.axisLeft(yScale);
-
-    // Append axes to SVG
-const svg = d3.select("#chart-container") //we selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // Plot data points
-    svg.selectAll("circle")
-        .data(x.map((d, i) => ({x: d, y: y[i]})))
-        .enter().append("circle")
-        .attr("cx", d => xScale(d.x))
-        .attr("cy", d => yScale(d.y))
-        .attr("r", 3);
-
- // Add vertical gridlines
-    svg.selectAll("xGrid")
-    .data(x.ticks().slice(1))
-    .join("line")
-    .attr("x1", d => x(d))
-    .attr("x2", d => x(d))
-    .attr("y1", 0)
-    .attr("y2", height)
-    .attr("stroke", "#e0e0e0")
-    .attr("stroke-width", .5);
-
-// // Add horizontal gridlines
-
-svg.selectAll("yGrid")
-.data(y.ticks((d3.max(dataset, d => d.value) - 65000) / 5000).slice(1))
-.join("line")
-.attr("x1", 0)
-.attr("x2", width)
-.attr("y1", d => y(d))
-.attr("y2", d => y(d))
-.attr("stroke", "#e0e0e0")
-.attr("stroke-width", .5)
-
-// Create the line generator
-
-    const line = d3.line()
-    .x(d => x(d.date))
-    .y(d => y(d.value));
-
-// Add the line path to the SVG element
-
-    svg.append("path")
-    .datum(dataset)
-    .attr("fill", "none")
-    .attr("stroke", "steelblue")
-    .attr("stroke-width", 1)
-    .attr("d", line);
-
-
-
- // Sample data arrays
-        // Create scales
-// 
-        // const xScale = d3.scaleLog()
-        //     .domain([1, d3.max(x)])
-        //     .range([margin.left, width - margin.right]);
-
-        // const yScale = d3.scaleLinear()
-        //     .domain([0, d3.max(y)])
-        //     .range([height - margin.bottom, margin.top]);
-// 
-
-
-
         // Function to interpolate y values for given x values
         function interpolateY(xValue) {
             const i = d3.bisectLeft(x, xValue);
@@ -166,7 +60,7 @@ function handleFileInput(event) {
         let worksheets = {};
 
         // let Sheet1 =  workbook.SheetNames[0]
-        console.log(workbook.SheetNames[0]);
+        // console.log(workbook.SheetNames[0]);
 
         for (const sheetName of workbook.SheetNames) {
             worksheets[sheetName] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
@@ -181,12 +75,12 @@ function handleFileInput(event) {
         // console.log(arrayOfStringsSheet1)
 
         // Converting the JSON from string to an array 
-        let arrayOfObjectsSheet1 = JSON.parse(arrayOfStringsSheet1);
-        let arrayOfObjectsSheet2 = JSON.parse(arrayOfStringsSheet2);
+        let arrayOfObjectsSheet1 = JSON.parse(arrayOfStringsSheet1); //for pressure time data
+        let arrayOfObjectsSheet2 = JSON.parse(arrayOfStringsSheet2); //for calculation data
 
         // console.log(arrayOfObjects);
         // console.log(arrayOfObjectsSheet1);
-        console.log(arrayOfObjectsSheet2);
+        // console.log(arrayOfObjectsSheet2);
         // console.log(arrayOfObjectsSheet2.length);
 
         // Function to extract "pressure" values into a separate array (start)
@@ -200,9 +94,9 @@ function handleFileInput(event) {
             return pressure;
         }
         // Extract names from jsonData
-        const names = extractPressure(arrayOfObjectsSheet1);
+        const Pressure_ = extractPressure(arrayOfObjectsSheet1);
         // Output the array of names
-        console.log(names);
+        // console.log(Pressure_);
         // Function to extract "pressure" values into a separate array (end)
 
 
@@ -220,7 +114,7 @@ function handleFileInput(event) {
         // Extract names from jsonData
         const time = extractTime(arrayOfObjectsSheet1);
         // Output the array of names
-        console.log(time);
+        // console.log(time);
         // Function to extract "time" values into a separate array (end)
 
         // function to extract the various calculation data.
@@ -231,7 +125,135 @@ function handleFileInput(event) {
 
         // Function to calculate the Skin factor (drawdown)
 
+        // SemiLogGraph(time, Pressure_)
 
+        // function that draws the Cartesian curve
+function CartesianGraph(time, Pressure_) {
+        // Line chart (Start)
+const x = time;
+const y = Pressure_;
+
+// Set dimensions and margins for the chart
+const margin = {top: 70, right:30, bottom: 40, left: 80};
+const width = 1200 - margin.left - margin.right;
+const height = 500 - margin.top -margin.bottom;
+
+
+// Append axes to SVG
+const svg = d3.select("#chart-container") //we selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Set up the x and y scales
+const xScale = d3.scaleLinear()
+    .domain([d3.min(x), d3.max(x)])
+    .range([0, width]);
+
+const yScale = d3.scaleLinear()
+    .domain([d3.min(y), d3.max(y)])
+    .range([height, 0]);
+
+
+// Create line generator
+const line = d3.line()
+    .x(d => xScale(d.x))
+    .y(d => yScale(d.y));
+
+// Prepare the data
+const data_ = x.map((d, i) => ({x: d, y: y[i]}));
+
+// Add the line path
+svg.append("path")
+    .datum(data_)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 1.5)
+    .attr("d", line);
+
+
+// Plot data points
+svg.selectAll("circle")
+    .data(data_)
+    .enter().append("circle")
+    .attr("cx", d => xScale(d.x))
+    .attr("cy", d => yScale(d.y))
+    .attr("r", 3);
+
+
+// Add x-axis
+svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(xScale));
+
+// Add y-axis
+svg.append("g")
+    .call(d3.axisLeft(yScale));
+
+//Line chart end
+}
+
+// function for Horner plot
+hornerPlot(time, Pressure_, arrayOfObjectsSheet2);
+
+function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
+    const pressure_array = Pressure_
+    const time_array = time
+    const Calculation_data_array = arrayOfObjectsSheet2
+
+    console.log(Calculation_data_array[0]);
+
+    const hornerArray = time_array.map(function(d) {
+        return (d + Calculation_data_array[0].Production_time) / d;
+    });
+
+    const reversedHorner_array = hornerArray.reverse()
+    const reversedpressure_array = pressure_array.reverse()
+    console.log(reversedHorner_array);
+
+    // Linear regression to to calculate slope and intercept startes here
+    // Given x and y values
+        const x = reversedHorner_array.slice(0, -1);
+        const y = reversedpressure_array.slice(0, -1);
+
+        // Change x-axis values to their logarithmic values (base 10)
+        const logX = x.map(value => Math.log10(value));
+
+        // Function to perform linear regression
+        function linearRegression(logX, y) {
+            const n = logX.length;
+            const sumX = logX.reduce((a, b) => a + b, 0); //https://www.youtube.com/watch?v=g1C40tDP0Bk about the reduce method
+            const sumY = y.reduce((a, b) => a + b, 0);
+            const sumXY = logX.reduce((sum, xVal, index) => sum + xVal * y[index], 0);
+            const sumXX = logX.reduce((sum, xVal) => sum + xVal * xVal, 0);
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            return { slope, intercept };
+        }
+
+        // Function to perform linear regression on the transformed x-values and y-values
+        const { slope, intercept } = linearRegression(logX, y);
+        // Output the slope
+        const newSlope = slope.toFixed(2)
+        const newIntercept = intercept.toFixed(2)
+        const absoluteSlope = Math.abs(newSlope )
+        console.log('Slope:', absoluteSlope);
+        console.log('Intercept:', newIntercept);
+
+    // Linear regression to to calculate slope and intercept ends here.
+
+        // Calculate permeability
+        const permeability = (162.2 * Calculation_data_array[0].Flow_rate * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
+
+        decimaledPermeability = permeability.toFixed(2)
+        console.log(decimaledPermeability);
+
+
+    }
 
 };
     reader.readAsArrayBuffer(file);
@@ -239,3 +261,5 @@ function handleFileInput(event) {
 
 document.getElementById('fileInput').addEventListener('change', handleFileInput);
     
+
+
