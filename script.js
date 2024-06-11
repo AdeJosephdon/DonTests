@@ -202,24 +202,50 @@ function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
     const pressure_array = Pressure_
     const time_array = time
     const Calculation_data_array = arrayOfObjectsSheet2
+    let time_of_production = Calculation_data_array[0].Production_time;
 
     console.log(Calculation_data_array[0]);
 
+    // If the total production time is to be calculated from the cummulative production.
+    if ( typeof time_of_production === "undefined") {
+        time_of_production = (24 * Calculation_data_array[0].cumulative_production) / Calculation_data_array[0].Flow_rate
+
+        // console.log("No")
+    } else {
+        // console.log("yes")
+        time_of_production = Calculation_data_array[0].Production_time;
+    }
+
+    console.log(time_of_production);
+
     const hornerArray = time_array.map(function(d) {
-        return (d + Calculation_data_array[0].Production_time) / d;
+        return (d + time_of_production) / d;
     });
 
     const reversedHorner_array = hornerArray.reverse()
     const reversedpressure_array = pressure_array.reverse()
     console.log(reversedHorner_array);
 
+
     // Linear regression to to calculate slope and intercept startes here
     // Given x and y values
         const x = reversedHorner_array.slice(0, -1);
         const y = reversedpressure_array.slice(0, -1);
 
-        // Change x-axis values to their logarithmic values (base 10)
-        const logX = x.map(value => Math.log10(value));
+        // Select the range of points that form the straight line (radial flow zone)
+        const startIndex = 0;  // Start index of the straight line section
+        const endIndex = 6;    // End index of the straight line section
+
+        const selectedX = x.slice(startIndex, endIndex + 1);
+        const selectedY = y.slice(startIndex, endIndex + 1);
+
+        console.log(selectedX);
+
+        // Change selected x-axis values to their logarithmic values (base 10)
+        const log_X = selectedX.map(value => Math.log10(value));
+
+        // Perform linear regression on the selected x-values and y-values
+        const { slope, intercept } = linearRegression(log_X, selectedY);
 
         // Function to perform linear regression
         function linearRegression(logX, y) {
@@ -235,8 +261,7 @@ function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
             return { slope, intercept };
         }
 
-        // Function to perform linear regression on the transformed x-values and y-values
-        const { slope, intercept } = linearRegression(logX, y);
+
         // Output the slope
         const newSlope = slope.toFixed(2)
         const newIntercept = intercept.toFixed(2)
@@ -246,12 +271,43 @@ function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
 
     // Linear regression to to calculate slope and intercept ends here.
 
-        // Calculate permeability
-        const permeability = (162.2 * Calculation_data_array[0].Flow_rate * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
+    // Function to find y value for a given x value using the regression line
+    function findYForX(xValue, slope, intercept) {
+        const logXValue = Math.log10(xValue);
+        return slope * logXValue + intercept;
+    }
 
-        decimaledPermeability = permeability.toFixed(2)
-        console.log(decimaledPermeability);
+    // Example usage to find y value for a given x value
+    const xValue = (time_of_production + 1)/ 1 ;  
+    const yValue = findYForX(xValue, slope, intercept);
+    console.log('Y value:',yValue);
 
+    // Calculate permeability
+    const permeability = (162.2 * Calculation_data_array[0].Flow_rate * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
+
+    decimaledPermeability = permeability.toFixed(2)
+    console.log("permeability: ",decimaledPermeability);
+    
+    const wellRadiusSquare = Calculation_data_array[0].Well_Radius * Calculation_data_array[0].Well_Radius
+
+
+    const LogPartSkinFactor = Math.log10(permeability /(Calculation_data_array[0].Porosity * Calculation_data_array[0].Viscosity * Calculation_data_array[0].Rock_Compressibility * wellRadiusSquare
+))
+// 7.85
+    const PressureSlopeSkinFactor = (yValue - Calculation_data_array[0].Initial_Pressure)/absoluteSlope
+
+    // console.log(LogPartSkinFactor);
+    console.log("LogPartSkinFactor: ",LogPartSkinFactor);
+    // console.log(Calculation_data_array[0].Initial_Pressure);
+    // console.log(yValue);
+    // console.log(slope);
+
+
+
+    // calculate skinFactor
+    const skinFactor = 1.1513 * (PressureSlopeSkinFactor - LogPartSkinFactor + 3.2275)
+
+console.log("skin: ", skinFactor)
 
     }
 
