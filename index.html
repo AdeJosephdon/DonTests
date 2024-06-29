@@ -13,6 +13,7 @@
         rel="stylesheet">
 
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <div class="grid-container">
@@ -117,14 +118,117 @@
                     <h2 class="chart-title">Buildup well Test</h2>
                     <div id="chart-container"></div> 
                 </div>
-                <div id="Equations-container"></div>
+            </div>
+
+            <div class="charts">
+                <div class="charts-card">
+                    <h2 class="chart-title">Calculations</h2>
+                    <div id="calculations-container">
+<!-- <h2>Solution</h2>
+<p>Our approach is to plot \( p_{ws} \) vs. \( \frac{t_p + \Delta t_i}{\Delta t_i} \), identify the position of the
+    middle-time line, and determine whether the late-time data fall on a line with slope double that of the middle-time
+    line. If so, then the straightforward double-slope method can be used to estimate the distance to the boundary. If
+    not, a more complicated calculation is required.</p>
+
+<p>1. Construct a Horner semilog plot above with the plotting functions given in Table below.</p>
+
+<p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
+
+\[
+m = \frac{p_{ws2} - p_{ws1}}{\log \left( \frac{t_{p} + \Delta t_2}{\Delta t_2} \right) - \log \left( \frac{t_{p} +
+\Delta t_1}{\Delta t_1} \right)}
+\]
+
+\[
+= \frac{6854.5 - 6860.5}{\log(10^5) - \log(10^4)}
+\]
+
+\[
+= \frac{6}{1} = 6.0 \text{ psi/cycle.}
+\]
+
+<p>3. The permeability is estimated from the slope of the semilog straight line.</p>
+
+\[
+k = \frac{162.6 q B \mu t}{m h} = \frac{(162.6)(293)(1.31)(0.6)}{(6.0)(25)} = 249.6 \text{ md.}
+\]
+
+<p>4. The slope of the best-fit straight line drawn through the later data (i.e., the late-time region) is</p>
+
+\[
+m = \frac{p_{ws2} - p_{ws1}}{\log \left( \frac{t_{p} + \Delta t_2}{\Delta t_2} \right) - \log \left( \frac{t_{p} +
+\Delta t_1}{\Delta t_1} \right)}
+\]
+
+\[
+= \frac{6876.2 - 6888.2}{\log(100) - \log(10)}
+\]
+
+\[
+= \frac{-12}{1} = 12 \text{ psi/cycle.}
+\]
+
+<p>Note that this slope is two times greater than that determined in Step 2. From the Horner plot shown in Fig. 2.32,
+    the Horner time ratio at which the middle- and late-time straight lines intersect is \( t_p + \Delta t_i/\Delta t_i
+    = 405 \), from which we calculate \( \Delta t_i = 0.99 \) hours. Thus, the distance from the well to the fault is
+    estimated to be</p>
+
+\[
+L = \left( \frac{0.000148 \Delta t_i}{\phi \mu c_t} \right)^{\frac{1}{2}} = \left(
+\frac{(0.000148)(249.6)(0.99)}{(0.22)(0.6)(12.7 \times 10^{-6})} \right)^{\frac{1}{2}}
+\]
+
+\[
+= 1477.7 \text{ ft.}
+\]
+
+<p>The time required for the slope to double (Eq. 2.91) is estimated to be</p>
+
+\[
+\Delta t = \frac{3.8 \times 10^5 \phi \mu c_t L^2}{k}
+\]
+
+\[
+= \frac{(3.8 \times 10^5)(0.22)(0.6)(12.7 \times 10^{-6})(1477.7)^2}{249.6}
+\]
+
+\[
+= 55.7 \text{ hours,}
+\]
+
+<p>which is much shorter than the duration of the buildup test (i.e., 120 hours). We should note that this
+    pressure-buildup test was conducted without wellbore-storage effects. In practice, however, these effects will...
+</p> -->
+                    </div> 
+                </div>
+            </div>
+
+            <div class="charts">
+                <div class="charts-card">
+                    <h2 class="chart-title">WellTest Table</h2>
+                    <div id="WellTest_Table_container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr id="t_head">
+                                <!-- <th>Column 1</th>
+                                <th>Column 2</th>
+                                <th>Column 3</th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be added here dynamically -->
+                        </tbody>
+                    </table>
+
+                </div>
             </div>
             <div class="charts">
                 <div class="charts-card">
-                    <h2 class="chart-title">Buildup well Test</h2>
-                    <div id="chart-container"></div> 
+                    <h2 class="chart-title">About WellTest</h2>
+                    <div id="About_WellTest-container">
+                        
+                    </div> 
                 </div>
-                <div id="Equations-container"></div>
             </div>
 
         </main>
