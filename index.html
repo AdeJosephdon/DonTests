@@ -99,14 +99,11 @@
                 <div id="upload-section">
                     <h2>Select Test Type</h2>
                     <div class="dropdown">
-                    <label for="tests">Choose a Welltest:  </label>
-                    
-                    <select id="tests">
-                        <option value="select">Select a Test</option>
-                        <option value="dropdown">Dropdown Test</option>
-                        <option value="build_up">Build Up Test</option>
-                        <option value="fall_off">Fall Off Test</option>
-                        <option value="injection">Injection Test</option>
+                    <select id="tests" onchange="handleDropdownChange()">
+                        <option value="">Select a Test</option>
+                        <option value="drawdownPlot">Dropdown Test</option>
+                        <option value="Variable_RatePlot">Variable Rate Plot Test</option>
+                        <option value="hornerPlot">Build Up Test (Horner)</option>
                     </select>
                     </div>
                 </div>
@@ -117,6 +114,15 @@
                 <div class="charts-card">
                     <h2 class="chart-title">Buildup well Test</h2>
                     <div id="chart-container"></div> 
+                    <div id="selectRegion">Please select the part of the chart above that has looks like a straight line<br>
+                    <div>Point 1: <label for="start-index">Start Index:</label>
+                    <select id="start-index"></select> 
+                    Point 2: <label for="end-index">End Index:</label>
+                    <select id="end-index"></select>
+                    </div>
+                
+                <button id="update-button">Update</button>
+                </div>
                 </div>
             </div>
 

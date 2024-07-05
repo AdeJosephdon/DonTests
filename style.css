@@ -115,7 +115,46 @@ body {
     align-items: center;
     justify-content: center;
 }
+#selectRegion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+/* Table */
+#WellTest_Table_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.line {
+    fill: none;
+    stroke-width: 2px;
+}
 
+.line1 {
+    stroke: steelblue;
+}
+
+.line2 {
+    stroke: tomato;
+}
+
+.line3 {
+    stroke: green;
+    stroke-dasharray: 5, 5;
+}
+
+/* Table borders */
+table,
+th,
+td {
+    border: 1px solid rgb(252, 249, 249);
+    border-collapse: collapse;
+    text-align: center;
+    padding: 8px;
+
+}
 
 
 @media screen and (max-width: 992px){
