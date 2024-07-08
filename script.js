@@ -14,46 +14,51 @@ function closeSidebar() {
         sidebarOPen = false
     }
 }
+document.getElementById("fileInput").addEventListener("change", function(event) {
+        const file = event.target.files[0];
 
-// Overall function that is triggered when the excel file has been uploaded
-function handleFileInput(event) {
-    const file = event.target.files[0];
+        if (file) {
+                const fileType = file.name.split('.').pop();
+                if (file.name.endsWith('.csv')) {
+                    handleCSV(file);
+                } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                    handleXLSX(file);
+                }   else {
+            console.error('Unsupported file type');
+        }
+            }
+        });
+
+        document.getElementById('fileInput2').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleSecondCSV(file);
+            }
+        });
+
+        let Pressure_ = [];
+        let time = [];
+        let FlowRate_ = [];
+        let arrayOfObjectsSheet2 = []
+
+
+    // Determine file type by extension
+function handleXLSX(file) {
     const reader = new FileReader();
-
-    // This function is triggered after the file being read has loaded
     reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
 
-        // convert excel file to JSON
         let worksheets = {};
-
-        for (const sheetName of workbook.SheetNames) {
+        workbook.SheetNames.forEach(function(sheetName) {
             worksheets[sheetName] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        }
+        });
 
-        let arrayOfStringsSheet1 = JSON.stringify(worksheets.Pressure_Time_Data);
-        let arrayOfStringsSheet2 = JSON.stringify(worksheets.Calculation_data);
+        // Extract data from the first sheet
+        const arrayOfObjectsSheet1 = worksheets["Pressure_Time_Data"];
+        arrayOfObjectsSheet2 = worksheets["Calculation_data"];
 
-        // console.log(arrayOfStringsSheet1)
 
-        document.getElementById("tests").selectedIndex = 0; //this returns the dropdown list to the initial "Select a test"
-
-        
-        d3.select("#chart-container").selectAll("*").remove(); // this clears the old chart when a new file is loaded.
-
-        // document.getElementById("dataTable").innerHTML = ""  // This clears the already created table when a new file is loaded.
-
-        // Converting the JSON from string to an array 
-        let arrayOfObjectsSheet1 = JSON.parse(arrayOfStringsSheet1); //for pressure time data
-        let arrayOfObjectsSheet2 = JSON.parse(arrayOfStringsSheet2); //for calculation data
-
-        // console.log(arrayOfObjects);
-        // console.log(arrayOfObjectsSheet1);
-        // console.log(arrayOfObjectsSheet2);
-        // console.log(arrayOfObjectsSheet2.length);
-
-        // Function to extract "pressure" values into a separate array (start)
         function extractPressure(data) {
             const pressure = [];
             data.forEach(P => {
@@ -63,13 +68,7 @@ function handleFileInput(event) {
             });
             return pressure;
         }
-        // Extract names from jsonData
-        const Pressure_ = extractPressure(arrayOfObjectsSheet1);
-        // Output the array of names
-        console.log(Pressure_);
-        // Function to extract "pressure" values into a separate array (end)
 
-        // Function to extract "time" values into a separate array (start)
         function extractTime(data) {
             const time = [];
             data.forEach(T => {
@@ -79,108 +78,98 @@ function handleFileInput(event) {
             });
             return time;
         }
-        // Extract names from jsonData
-        const time = extractTime(arrayOfObjectsSheet1);
-        // Output the array of time
-        console.log(time);
-        // Function to extract "time" values into a separate array (end)
 
-        // Function to extract "pressure" values into a separate array (start)
         function extractFlowRate(data) {
             const flowRate = [];
-            data.forEach(P => {
-                if (P.hasOwnProperty("FlowRate")) {
-                    flowRate.push(P.FlowRate);
+            data.forEach(F => {
+                if (F.hasOwnProperty("FlowRate")) {
+                    flowRate.push(F.FlowRate);
                 }
             });
             return flowRate;
         }
-        // Extract names from jsonData
-        const FlowRate_ = extractFlowRate(arrayOfObjectsSheet1);
-        // Output the array of names
-        console.log(FlowRate_);
-        // Function to extract "pressure" values into a separate array (end)
 
+        Pressure_ = extractPressure(arrayOfObjectsSheet1);
+        time = extractTime(arrayOfObjectsSheet1);
+        FlowRate_ = extractFlowRate(arrayOfObjectsSheet1);
+        // const arrayOfObjectsSheet2 = arrayOfObjectsSheetCalc;
 
-// Variable_RatePlot(time, Pressure_, arrayOfObjectsSheet2, FlowRate_);
+        console.log('Pressure =', Pressure_);
+        console.log('Time =', time);
+        console.log('FlowRate =', FlowRate_);
 
-        // SemiLogGraph(time, Pressure_)
+    };
+    reader.readAsArrayBuffer(file);
+}
+        
+        
+    function handleCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                // const time = [];
+                // const pressure = [];
+                // const flowrate = [];
 
-        // function that draws the Cartesian curve
-// function CartesianGraph(time, Pressure_) {
-//         // Line chart (Start)
-// const x = time;
-// const y = Pressure_;
+            var element = document.getElementById("secondFileInput");
+            element.style.display = "block";
 
-// // Set dimensions and margins for the chart
-// const margin = {top: 70, right:30, bottom: 40, left: 80};
-// const width = 1200 - margin.left - margin.right;
-// const height = 500 - margin.top -margin.bottom;
+                lines.forEach((line, index) => {
+                    if (index > 0 && line) { // Skip the header line
+                        const [timeValue, pressureValue, flowrateValue] = line.split(',').map(value => value.trim());
+                        time.push(parseFloat(timeValue));
+                        Pressure_.push(parseInt(pressureValue));
+                        FlowRate_.push(parseFloat(flowrateValue));
+                    }
+                });
 
+            };
+            reader.readAsText(file);
+        }
 
-// // Append axes to SVG
-// const svg = d3.select("#chart-container") //we selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
-//     .append("svg")
-//         .attr("width", width + margin.left + margin.right)
-//         .attr("height", height + margin.top + margin.bottom)
-//     .append("g")
-//         .attr("transform", `translate(${margin.left},${margin.top})`);
+        function handleSecondCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                const keys = lines[0].split(',').map(value => value.trim());
+                const values = lines[1] ? lines[1].split(',').map(value => value.trim()) : [];
 
-// // Set up the x and y scales
-// const xScale = d3.scaleLinear()
-//     .domain([d3.min(x), d3.max(x)])
-//     .range([0, width]);
+                const obj = {};
+                keys.forEach((key, index) => {
+                    const value = parseFloat(values[index]);
+                    obj[key] = !isNaN(value) ? value : undefined;
+                });
 
-// const yScale = d3.scaleLinear()
-//     .domain([d3.min(y), d3.max(y)])
-//     .range([height, 0]);
+                arrayOfObjectsSheet2 = [obj];
+                
+                // return array;
+            };
+            reader.readAsText(file);
+        }
 
+        console.log("Calculation_data_array", arrayOfObjectsSheet2);
 
-// // Create line generator
-// const line = d3.line()
-//     .x(d => xScale(d.x))
-//     .y(d => yScale(d.y));
-
-// // Prepare the data
-// const data_ = x.map((d, i) => ({x: d, y: y[i]}));
-
-// // Add the line path
-// svg.append("path")
-//     .datum(data_)
-//     .attr("fill", "none")
-//     .attr("stroke", "steelblue")
-//     .attr("stroke-width", 1.5)
-//     .attr("d", line);
-
-
-// // Plot data points
-// svg.selectAll("circle")
-//     .data(data_)
-//     .enter().append("circle")
-//     .attr("cx", d => xScale(d.x))
-//     .attr("cy", d => yScale(d.y))
-//     .attr("r", 3);
-
-
-// // Add x-axis
-// svg.append("g")
-//     .attr("transform", `translate(0,${height})`)
-//     .call(d3.axisBottom(xScale));
-
-// // Add y-axis
-// svg.append("g")
-//     .call(d3.axisLeft(yScale));
-
-    // }
-
-// function for Horner plot
-// hornerPlot(time, Pressure_, arrayOfObjectsSheet2);
 
 
 function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
     const pressure_array = Pressure_
     const time_array = time
     const Calculation_data_array = arrayOfObjectsSheet2
+
+    var elements = document.getElementsByClassName("chart-title1");
+            for (var i = 0; i < elements.length; i++) {
+                elements[i].textContent = "Build-up (Horner) Well Test";
+            }
+
+var element = document.getElementById("selectRegion");
+element.style.display = "flex";
+element.style.alignItems = "center";  
+element.style.justifyContent = "center";  
+element.style.flexDirection = "column"; 
+
+
     let time_of_production = Calculation_data_array[0].Production_time;
 
     console.log("pressure_array",pressure_array);
@@ -327,6 +316,29 @@ function Semi_LogGraph(time, pressure_data) {
                 .attr("cx", d => xScale(d.x))
                 .attr("cy", d => yScale(d.y))
                 .attr("r", 3);
+
+// X-axis label with MathJax
+        svg.append("foreignObject")
+            .attr("class", "x-axis-label")
+            .attr("x", width / 2)
+            .attr("y", height + 10)
+            .attr("width", 200)
+            .attr("height", height + margin.bottom - 5)
+            .html('<div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center;">' +
+                '\\( \\frac{t_p + \\Delta t_i}{\\Delta t_i} \\)' +
+                '</div>');
+
+        // Y-axis label
+        svg.append("text")
+            .attr("class", "y-axis-label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -margin.left + 20)
+            .style("fill", "white")
+            .text("P_ws");
+
+            MathJax.typesetPromise();
         }
 
         // Initial rendering
@@ -340,12 +352,12 @@ function Semi_LogGraph(time, pressure_data) {
         xData.forEach((d, i) => {
         const optionStart = document.createElement('option');
         optionStart.value = i;
-        optionStart.text = d;
+        optionStart.text = d.toFixed(2);
         startIndexSelect.appendChild(optionStart);
 
         const optionEnd = document.createElement('option');
         optionEnd.value = i;
-        optionEnd.text = d;
+        optionEnd.text = d.toFixed(2);
         endIndexSelect.appendChild(optionEnd);
         });
 
@@ -368,49 +380,58 @@ function updateGraph() {
     // Given x and y values
     // Identify the straight line portion
             const straightXData = xData.slice(startIndex, endIndex + 1);
-            const straightLogXData = straightXData.map(d => Math.log(d));
-            // let log_x = x.map(value => Math.log(value));
             const straightYData = yData.slice(startIndex, endIndex + 1);
         // Perform linear regression on the selected x-values and y-values
-console.log(straightLogXData);
+// console.log(straightLogXData);
 console.log(straightYData);
         // Function to perform linear regression.
-        // const linearRegression = (x, y) => {
-        //         const n = x.length;
-        //         const sumX = d3.sum(x);
-        //         const sumY = d3.sum(y);
-        //         const sumXY = d3.sum(x.map((d, i) => d * y[i]));
-        //         const sumXX = d3.sum(x.map(d => d * d));
-        //         const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-        //         const intercept = (sumY * sumXX - sumX * sumXY) / (n * sumXX - sumX * sumX);
-        //         return { slope, intercept };
-        //     };
-        // const { slope, intercept} = linearRegression(straightLogXData, straightYData);
+function semiLogLinearRegression(xData, yData) {
+    // Convert X values to logarithmic scale
+    const logXData = xData.map(x => Math.log10(x));
 
-const x_mean = straightLogXData.reduce((a, b) => a + b, 0) / straightLogXData.length;
-const y_mean = straightYData.reduce((a, b) => a + b, 0) / straightYData.length;
+    const n = xData.length;
+    let sumLogX = 0, sumY = 0, sumLogXY = 0, sumLogXLogX = 0;
 
-let numerator = 0;
-let denominator = 0;
+    for (let i = 0; i < n; i++) {
+        sumLogX += logXData[i];
+        sumY += yData[i];
+        sumLogXY += logXData[i] * yData[i];
+        sumLogXLogX += logXData[i] * logXData[i];
+    }
 
-for (let i = 0; i < straightLogXData.length; i++) {
-    numerator += (straightLogXData[i] - x_mean) * (straightYData[i] - y_mean);
-    denominator += (straightLogXData[i] - x_mean) ** 2;
+    // Calculate slope and intercept
+    const slope = (n * sumLogXY - sumLogX * sumY) / (n * sumLogXLogX - sumLogX * sumLogX);
+    const intercept = (sumY - slope * sumLogX) / n;
+
+    // Calculate R-squared
+    const yMean = sumY / n;
+    let totalSS = 0, residualSS = 0;
+    for (let i = 0; i < n; i++) {
+        totalSS += Math.pow(yData[i] - yMean, 2);
+        residualSS += Math.pow(yData[i] - (slope * logXData[i] + intercept), 2);
+    }
+    const rSquared = 1 - (residualSS / totalSS);
+
+    return { slope, intercept, rSquared };
 }
 
-const slope = numerator / denominator;
-const intercept = y_mean - slope * x_mean;
+const result = semiLogLinearRegression(straightXData, straightYData);
+
+console.log("Slope:", result.slope);
+console.log("Intercept:", result.intercept);
+console.log("R-squared:", result.rSquared);
+
+// Calculate slope for one cycle (one order of magnitude)
+const slopePerCycle = result.slope * Math.log10(10);
+console.log("Slope per cycle:", slopePerCycle);
+
 
         // The intercept calculated by the code above is the y-value when, x =1 on the original x-scale. i.e log(x) = 0
 // console.log(linearRegression(log_X, variable));
-console.log("original slope:", slope);
+
         // Output the slope
-        const math = Math; // Reference the Math library for mathematical functions
-
-        const actualSlope = math.exp(slope) - 1;
-
-        const newSlope = actualSlope.toFixed(2)
-        const newIntercept = intercept.toFixed(2)
+        const newSlope = result.slope.toFixed(2)
+        const newIntercept = result.intercept.toFixed(2)
         const absoluteSlope = Math.abs(newSlope )
         console.log('Slope:', absoluteSlope);
         console.log('Intercept:', newIntercept);
@@ -418,24 +439,52 @@ console.log("original slope:", slope);
     // Linear regression to to calculate slope and intercept ends here.
 
 
+// Using the slope and intercept from the regression to find y1 and y2
+const x1 = 1;
+const x2 = 10;
+const x3 = (Calculation_data_array[0].Production_time + 1) / 1;
+// Calculate y1 and y2 using the regression line equation: y = m * log10(x) + b
+const y1 = result.slope * Math.log10(x1) + result.intercept;
+const y2 = result.slope * Math.log10(x2) + result.intercept;
+const y3 = result.slope * Math.log10(x3) + result.intercept;
+
+console.log("y1 (at x=1):", y1);// This is the pressure at horner time = 1. 
+console.log("y2 (at x=10):", y2);
+console.log("y3:", y3); //This is the ppressure at change in t = 1hr
+
+// Calculate slope using the formula m = (y2 - y1) / (log10(x2) - log10(x1))
+const calculatedSlope = (y2 - y1) / (Math.log10(x2) - Math.log10(x1));
+
+console.log("Calculated slope using (y2 - y1) / (log10(x2) - log10(x1)):", calculatedSlope);
+console.log("Difference from regression slope:", Math.abs(calculatedSlope - result.slope));
+
+    // Linear regression to to calculate slope and intercept ends here.
+
+
     // Generate points for the straight line
     const straightLineData = [];
     for (let i = xMin; i <= xMax; i *= 10) {
-        const y = slope * Math.log(i) + intercept;
+        const y = Number(newSlope) * Math.log10(i) + Number(newIntercept);
         straightLineData.push({ x: i, y: y });
     }
+
+    const minimumY = straightLineData[straightLineData.length - 1].y 
+
+
+    console.log("originalData: ", originalData);
+    console.log("straightLineData: ", straightLineData);
 
     // Calculate new yMinDomain based on intercept if necessary
     let yScaleRange = 10; // Adjust this based on your y-scale range increments
     let yMinDomain = nextLowestRange(d3.min(yData), yScaleRange);
-    if (intercept < yMinDomain) {
-        yMinDomain = nextLowestRange(intercept, yScaleRange);
+    if (minimumY < yMinDomain) {
+        yMinDomain = nextLowestRange(minimumY, yScaleRange);
     }
 
      // Calculate new yMaxDomain based on intercept if necessary
     let yMaxDomain = nextHighestRange(d3.max(yData), yScaleRange);
-    if (intercept > yMaxDomain) {
-        yMaxDomain = nextHighestRange(intercept, yScaleRange);
+    if (newIntercept > yMaxDomain) {
+        yMaxDomain = nextHighestRange(newIntercept, yScaleRange);
     }
 
     // const yMaxDomain = d3.max(yData);
@@ -491,9 +540,8 @@ console.log("original slope:", slope);
                 .attr("cy", d => yScale(d.y))
                 .attr("r", 3);
 
-
     // Calculate permeability
-    const permeability = (162.2 *  Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
+    const permeability = (162.2 * Calculation_data_array[0].Flow_rate * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
 
     decimaledPermeability = permeability.toFixed(2)
     console.log("permeability: ",decimaledPermeability);
@@ -501,12 +549,12 @@ console.log("original slope:", slope);
     // Calculate skin factor
     const wellRadiusSquare = Calculation_data_array[0].Well_Radius * Calculation_data_array[0].Well_Radius
 
-    const yValue = (slope * 1) + intercept;
+    const yValue = (result.slope * 1) + result.intercept;
 
 
     const LogPartSkinFactor = Math.log10(permeability /(Calculation_data_array[0].Porosity * Calculation_data_array[0].Viscosity * Calculation_data_array[0].Rock_Compressibility * wellRadiusSquare));
 // 7.85
-    const PressureSlopeSkinFactor = (newIntercept)/absoluteSlope
+    const PressureSlopeSkinFactor = (y1 - Calculation_data_array[0].Initial_Pressure)/absoluteSlope
 
     // calculate skinFactor
     const skinFactor = 1.151 * (PressureSlopeSkinFactor - LogPartSkinFactor + 3.23)
@@ -515,19 +563,27 @@ console.log("original slope:", slope);
 
 console.log(yValue)
 console.log("skin: ", decimaledskinFactor);
+console.log("oskin: ", skinFactor);
 
 
 // Write the calculation steps
 document.getElementById("calculations-container").innerHTML = `
             <h2>Solution</h2> 
-            <p>Our approach is to plot \\( p_{ws} \\) vs. \\( \\frac{t_p + \\Delta t_i}{\\Delta t_i} \\), identify the position of the middle-time line, and determine whether the late-time data fall on a line with slope double that of the middle-time line. If so, then the straightforward double-slope method can be used to estimate the distance to the boundary. If not, a more complicated calculation is required.</p>
 
-            <p>1. Construct a Horner semilog plot above with the plotting functions given in Table below.</p>
+            <p>1. Construct a Horner semilog plot above with the plotting functions given in \\( p_{ws} \\) vs. \\( \\frac{t_p + \\Delta t_i}{\\Delta t_i} \\) and identify the position of the middle-time line.</p>
+
+            <p> The intercept @ \\( \\frac{t_p + \\Delta t_i}{\\Delta t_i} \\) = 1 is the average reservoir pressure</p>
+
+            <p> Average reservoir pressure = ${newIntercept} psi</p>
 
             <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
             \\[
-            m = \\frac{p_{ws2} - p_{ws1}}{\\log \\left( \\frac{t_{p} + \\Delta t_2}{\\Delta t_2} \\right) - \\log \\left( \\frac{t_{p} + \\Delta t_1}{\\Delta t_1} \\right)}
+            m = \\left| \\frac{p_{ws2} - p_{ws1}}{\\log \\left( \\frac{t_{p} + \\Delta t_2}{\\Delta t_2} \\right) - \\log \\left( \\frac{t_{p} + \\Delta t_1}{\\Delta t_1} \\right)} \\right|
+            \\]
+
+            \\[
+            = \\left| \\frac{${y1.toFixed(2)} - ${y2.toFixed(2)}}{\\log(10) - \\log(1)} \\right|
             \\]
 
             \\[
@@ -544,51 +600,11 @@ document.getElementById("calculations-container").innerHTML = `
             s = 1.1513 \\left[ \\frac{P_{1hr} - P_{wf}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
             \\]
             \\[
-            s = 1.1513 \\left[ \\frac{(${yValue}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
+            s = 1.1513 \\left[ \\frac{(${y1.toFixed(2)}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
             \\]
             \\[
             s = ${decimaledskinFactor}
             \\]
-
-            <p>4. The slope of the best-fit straight line drawn through the later data (i.e., the late-time region) is</p>
-
-            \\[
-            m = \\frac{p_{ws2} - p_{ws1}}{\\log \\left( \\frac{t_{p} + \\Delta t_2}{\\Delta t_2} \\right) - \\log \\left( \\frac{t_{p} + \\Delta t_1}{\\Delta t_1} \\right)}
-            \\]
-
-            \\[
-            = \\frac{6876.2 - 6888.2}{\\log(100) - \\log(10)}
-            \\]
-
-            \\[
-            = \\frac{-12}{1} = 12 \\text{ psi/cycle.}
-            \\]
-
-            <p>Note that this slope is two times greater than that determined in Step 2. From the Horner plot shown in Fig. 2.32, the Horner time ratio at which the middle- and late-time straight lines intersect is \\( t_p + \\Delta t_i/\\Delta t_i = 405 \\), from which we calculate \\( \\Delta t_i = 0.99 \\) hours. Thus, the distance from the well to the fault is estimated to be</p>
-
-            \\[
-            L = \\left( \\frac{0.000148 \\Delta t_i}{\\phi \\mu c_t} \\right)^{\\frac{1}{2}} = \\left( \\frac{(0.000148)(249.6)(0.99)}{(0.22)(0.6)(12.7 \\times 10^{-6})} \\right)^{\\frac{1}{2}}
-            \\]
-
-            \\[
-            = 1477.7 \\text{ ft.}
-            \\]
-
-            <p>The time required for the slope to double (Eq. 2.91) is estimated to be</p>
-
-            \\[
-            \\Delta t = \\frac{3.8 \\times 10^5 \\phi \\mu c_t L^2}{k}
-            \\]
-
-            \\[
-            = \\frac{(3.8 \\times 10^5)(0.22)(0.6)(12.7 \\times 10^{-6})(1477.7)^2}{249.6}
-            \\]
-
-            \\[
-            = 55.7 \\text{ hours,}
-            \\]
-
-            <p>which is much shorter than the duration of the buildup test (i.e., 120 hours). We should note that this pressure-buildup test was conducted without wellbore-storage effects. In practice, however, these effects will...</p>
         `;
 
 // Generate the table 
@@ -611,7 +627,7 @@ time,
             const row = document.createElement('tr');
             
             const cell1 = document.createElement('td');
-            cell1.textContent = value;
+            cell1.textContent = value.toFixed(2);
             row.appendChild(cell1);
             
             const cell2 = document.createElement('td');
@@ -619,7 +635,7 @@ time,
             row.appendChild(cell2);
 
             const cell3 = document.createElement('td');
-            cell3.textContent = hornerArrayReversedAgain[index];
+            cell3.textContent = hornerArrayReversedAgain[index].toFixed(2);
             row.appendChild(cell3);
             
             tableBody.appendChild(row);
@@ -638,98 +654,24 @@ function drawdownPlot(time, Pressure_, arrayOfObjectsSheet2) {
     const time_array = time
     const Calculation_data_array = arrayOfObjectsSheet2
 
-    console.log(Calculation_data_array[0]);
+        var elements = document.getElementsByClassName("chart-title1");
+            for (var i = 0; i < elements.length; i++) {
+                elements[i].textContent = "Constant Rate Drawdown Well Test";
+            }
+
+var element = document.getElementById("selectRegion");
+element.style.display = "flex";
+element.style.alignItems = "center";  
+element.style.justifyContent = "center";  
+element.style.flexDirection = "column"; 
 
 
-    // Linear regression to to calculate slope and intercept startes here
-    // Given x and y values
-
-        // Select the range of points that form the straight line (radial flow zone)
-        const startIndex = 1; 
-        const endIndex = 19;    
-
-        const selectedX = time_array.slice(startIndex, endIndex + 1);
-        const selectedY = pressure_array.slice(startIndex, endIndex + 1);
-
-        console.log("SelectedX: ",selectedX);
-
-        // Change selected x-axis values to their logarithmic values (base 10)
-        const log_X = selectedX.map(value => Math.log10(value));
-
-        // Perform linear regression on the selected x-values and y-values
-        const { slope, intercept, n, sumXY, sumX, sumY, sumXX} = linearRegression(log_X, selectedY);
-
-        console.log("SelectedX: ",log_X);
-
-        // Function to perform linear regression
-        function linearRegression(logX, y) {
-            const n = logX.length;
-            const sumX = logX.reduce((a, b) => a + b, 0); //https://www.youtube.com/watch?v=g1C40tDP0Bk about the reduce method
-            const sumY = y.reduce((a, b) => a + b, 0);
-            const sumXY = logX.reduce((sum, xVal, index) => sum + xVal * y[index], 0);
-            const sumXX = logX.reduce((sum, xVal) => sum + xVal * xVal, 0);
-
-            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-            const intercept = (sumY - slope * sumX) / n;
-
-            return { slope, intercept, n, sumXY, sumX, sumY, sumXX};
-        }
-
-
-        // Output the slope
-        const newSlope = slope.toFixed(2)
-        const newIntercept = intercept.toFixed(2)
-        const absoluteSlope = Math.abs(newSlope )
-        console.log('Slope:', absoluteSlope);
-        console.log('Intercept:', newIntercept);
-
-    // Linear regression to to calculate slope and intercept ends here.
-    // Function to find y value for a given x value using the regression line
-    function findYForX(xValue, slope, intercept) {
-        // const logXValue = Math.log10(xValue);
-        return slope * xValue + intercept;
-    }
-
-    // Example usage to find y value for a given x value  
-    const yValue = findYForX(1, slope, intercept);
-    const maxValue = findYForX(0.1, slope, intercept);
-    const newYValue = findYForX(10, slope, intercept);
-
-    console.log('Y value:',yValue);
-    // Calculate permeability
-    const permeability = (162.2 * Calculation_data_array[0].Flow_rate * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
-
-    decimaledPermeability = permeability.toFixed(2)
-    console.log("permeability: ",decimaledPermeability);
-    
-    // Calculate skin factor
-    const wellRadiusSquare = Calculation_data_array[0].Well_Radius * Calculation_data_array[0].Well_Radius
-
-
-    const LogPartSkinFactor = Math.log10(permeability /(Calculation_data_array[0].Porosity * Calculation_data_array[0].Viscosity * Calculation_data_array[0].Rock_Compressibility * wellRadiusSquare));
-// 7.85
-    const PressureSlopeSkinFactor = (Calculation_data_array[0].Initial_Pressure - yValue)/absoluteSlope
-
-    // calculate skinFactor
-    const skinFactor = 1.151 * (PressureSlopeSkinFactor - LogPartSkinFactor + 3.23)
-
-    const decimaledskinFactor = skinFactor.toFixed(2)
-
-console.log("skin: ", decimaledskinFactor);
-
-
-// Semi_LogGraph(time_array, pressure_array, absoluteSlope, maxValue, selectedX, selectedY) nm
 Semi_LogGraph(time_array, pressure_array)
 
 function Semi_LogGraph(time, Pressure_) {
-// function Semi_LogGraph(time, Pressure_, slope, maxValue, selectedX, selectedY) { nm
-    // Line chart (Start)
     const xData = time;
     const yData = Pressure_;
-    // const slope_ = slope;nm
-    // const maxValueForY = maxValue;nm
-    // const yValueForSL = selectedY;nm
-    // const xValueForSL = selectedX;nm
+
 
 
     // Function to find the next lowest multiple of 10 (this will be used for x axis)
@@ -750,13 +692,6 @@ function Semi_LogGraph(time, Pressure_) {
         return Math.ceil(value / range) * range;
     }
 
-    // Calculate new yMaxDomain based on intercept if necessary
-//     let yMaxDomain = nextHighestRange(d3.max(yData), yScaleRange);
-//     if (intercept > yMaxDomain) {
-//         yMaxDomain = nextHighestRange(intercept, yScaleRange);
-//     }
-
-
 
     // Set dimensions and margins for the chart
     const margin = {top: 70, right: 30, bottom: 40, left: 80};
@@ -770,95 +705,31 @@ function Semi_LogGraph(time, Pressure_) {
             .attr("height", height + margin.top + margin.bottom)
         .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
-const maximum_scale = 0.1
-
-    // // Set up the x and y scales
-    // const maxX = d3.max(x);nm
-    // const xScale = d3.scaleLog()nm
-    //     .domain([maximum_scale, Math.pow(10, Math.ceil(Math.log10(maxX)))])nm
-    //     .range([0, width]);nm
-
-    // const yScale = d3.scaleLinear()nm
-    //     .domain([d3.min(y), d3.max(y)])nm
-    //     .range([height, 0]);nm
-
-    // // Create line generator
-    // const line = d3.line()nm
-    //     .x(d => xScale(d.x))nm
-    //     .y(d => yScale(d.y));nm
+const minimum_scale = 0.1
 
 // Determine the domain of the x-axis
     const xMin = nextLowestMultipleOf10(d3.min(xData));
     const xMax = nextHighestMultipleOf10(d3.max(xData));
 
+    console.log(xMax)
+
     // console.log(xMin);
 
     // Set up the x and y scales
     const xScale = d3.scaleLog()
-        .domain([maximum_scale, xMax])
+        .domain([minimum_scale, xMax])
         .range([0, width]);
 
         svg.append("g")
             .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(xScale).ticks(10, ",.1s"));
+            .call(d3.axisBottom(xScale));
 
 
     // Prepare the data
-    // const data_ = x.map((d, i) => ({x: d, y: y[i]}));nm
-
-    // console.log(data_)nm
     const originalData = xData.map((d, i) => ({x: d, y: yData[i]}));
 
     console.log(originalData)
 
-// nm from here
-    // // Add the line path
-    // svg.append("path")
-    //     .datum(data_)
-    //     .attr("fill", "none")
-    //     .attr("stroke", "steelblue")
-    //     .attr("stroke-width", 1.5)
-    //     .attr("d", line);
-
-    // // Plot data points
-    // svg.selectAll("circle")
-    //     .data(data_)
-    //     .enter().append("circle")
-    //     .attr("cx", d => xScale(d.x))
-    //     .attr("cy", d => yScale(d.y))
-    //     .attr("r", 3);
-
-    // // Add x-axis
-    // svg.append("g")
-    //     .attr("transform", `translate(0,${height})`)
-    //     .call(d3.axisBottom(xScale).ticks(10, ",.1s"));
-
-    // // Add y-axis
-    // svg.append("g")
-    //     .call(d3.axisLeft(yScale));
-
-    // // Add grid lines
-    // svg.append("g")
-    //     .attr("class", "grid")
-    //     .attr("transform", `translate(0,${height})`)
-    //     .call(d3.axisBottom(xScale)
-    //         .tickSize(-height)
-    //         .tickFormat("")
-    //     );
-
-    // svg.append("g")
-    //     .attr("class", "grid")
-    //     .call(d3.axisLeft(yScale)
-    //         .tickSize(-width)
-    //         .tickFormat("")
-//         );
-
-// // Create straightline to be superimposed
-// const xForStraighline = [maximum_scale, xValueForSL[xValueForSL.length - 1]] //X-value chosen are 1. the last value of the selectedX value and 1 (where we have the intercept)
-// const yForStraighline = [maxValueForY, yValueForSL[yValueForSL.length - 1]]
-// // Y-value chosen are 1. the last value of the selectedY value and the intercept
-
-// nm ends here
 
 // Initial rendering of y-axis and data points
         function renderYScaleAndData(yMin, yMax, original_Data) {
@@ -876,19 +747,29 @@ const maximum_scale = 0.1
 
             // Create line generator
             const line = d3.line()
-                .x(d => xScale(d.x))
-                .y(d => yScale(d.y));
+                .x(d => {
+                    console.log(`xScale(${d.x}): `, xScale(d.x)); // Debug x-scale
+                    return xScale(d.x);
+                })
+                .y(d => {
+                    console.log(`yScale(${d.y}): `, yScale(d.y)); // Debug y-scale
+                    return yScale(d.y);
+                });
 
-            // Prepare the data
-            // const originalData = xData.map((d, i) => ({x: d, y: yData[i]}));
-            const originalData = original_Data;
+           // Check for NaN values in data
+            original_Data.forEach(d => {
+                if (isNaN(d.x) || isNaN(d.y)) {
+                    console.error('NaN value detected in data: ', d);
+                }
+            });
+
 
             // Remove previous lines and circles
             svg.selectAll(".line1, circle").remove();
 
             // Add the line path
             svg.append("path")
-                .datum(originalData)
+                .datum(original_Data)
                 .attr("class", "line line1")
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
@@ -897,7 +778,7 @@ const maximum_scale = 0.1
 
             // Plot data points
             svg.selectAll("circle")
-                .data(originalData)
+                .data(original_Data)
                 .enter().append("circle")
                 .attr("cx", d => xScale(d.x))
                 .attr("cy", d => yScale(d.y))
@@ -907,11 +788,6 @@ const maximum_scale = 0.1
         // Initial rendering
         renderYScaleAndData(d3.min(yData), d3.max(yData), originalData);
 
-
-// // Create straight line data points
-//     const regLineData = xForStraighline.map((d, i) => ({x: d, y: yForStraighline[i]})); nm
-
-//     console.log("Regression line data",regLineData); nm
 
 // Populate dropdown lists
         const startIndexSelect = document.getElementById('start-index');
@@ -949,36 +825,63 @@ function updateGraph() {
     // Given x and y values
     // Identify the straight line portion
             const straightXData = xData.slice(startIndex, endIndex + 1);
+            console.log("straightXData: ", straightXData)
             const straightLogXData = straightXData.map(d => Math.log(d));
-
-            // console.log("xData: ",xData)
-            // console.log("yData: ",yData)
-            // console.log(straightLogXData)
 
             const straightYData = yData.slice(startIndex, endIndex + 1);
 
-            // console.log(straightYData)
+            console.log("straightLogXData: ", straightLogXData)
+            console.log("straightYData: ", straightYData)
 
         // Perform linear regression on the selected x-values and y-values
 
-        // Function to perform linear regression.
-        function linearRegression(x, y) {
-            const n = x.length;
-                const sumX = d3.sum(x);
-                const sumY = d3.sum(y);
-                const sumXY = d3.sum(x.map((d, i) => d * y[i]));
-                const sumXX = d3.sum(x.map(d => d * d));
-                const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-                const intercept = (sumY - slope * sumX) / n;
-                return { slope, intercept };
-        }
-        const { slope, intercept} = linearRegression(straightLogXData, straightYData);
+function semiLogLinearRegression(xData, yData) {
+    // Convert X values to logarithmic scale
+    const logXData = xData.map(x => Math.log10(x));
+
+    const n = xData.length;
+    let sumLogX = 0, sumY = 0, sumLogXY = 0, sumLogXLogX = 0;
+
+    for (let i = 0; i < n; i++) {
+        sumLogX += logXData[i];
+        sumY += yData[i];
+        sumLogXY += logXData[i] * yData[i];
+        sumLogXLogX += logXData[i] * logXData[i];
+    }
+
+    // Calculate slope and intercept
+    const slope = (n * sumLogXY - sumLogX * sumY) / (n * sumLogXLogX - sumLogX * sumLogX);
+    const intercept = (sumY - slope * sumLogX) / n;
+
+    // Calculate R-squared
+    const yMean = sumY / n;
+    let totalSS = 0, residualSS = 0;
+    for (let i = 0; i < n; i++) {
+        totalSS += Math.pow(yData[i] - yMean, 2);
+        residualSS += Math.pow(yData[i] - (slope * logXData[i] + intercept), 2);
+    }
+    const rSquared = 1 - (residualSS / totalSS);
+
+    return { slope, intercept, rSquared };
+}
+
+const result = semiLogLinearRegression(straightXData, straightYData);
+
+console.log("Slope:", result.slope);
+console.log("Intercept:", result.intercept);
+console.log("R-squared:", result.rSquared);
+
+// Calculate slope for one cycle (one order of magnitude)
+const slopePerCycle = result.slope * Math.log10(10);
+console.log("Slope per cycle:", slopePerCycle);
+
+
         // The intercept calculated by the code above is the y-value when, x =1 on the original x-scale. i.e log(x) = 0
 // console.log(linearRegression(log_X, variable));
 
         // Output the slope
-        const newSlope = slope.toFixed(2)
-        const newIntercept = intercept.toFixed(2)
+        const newSlope = result.slope.toFixed(2)
+        const newIntercept = result.intercept.toFixed(2)
         const absoluteSlope = Math.abs(newSlope )
         console.log('Slope:', absoluteSlope);
         console.log('Intercept:', newIntercept);
@@ -986,17 +889,40 @@ function updateGraph() {
     // Linear regression to to calculate slope and intercept ends here.
 
 
+// Using the slope and intercept from the regression to find y1 and y2
+const x1 = 1;
+const x2 = 10;
+
+// Calculate y1 and y2 using the regression line equation: y = m * log10(x) + b
+const y1 = result.slope * Math.log10(x1) + result.intercept;
+const y2 = result.slope * Math.log10(x2) + result.intercept;
+
+console.log("y1 (at x=1):", y1);
+console.log("y2 (at x=10):", y2);
+
+// Calculate slope using the formula m = (y2 - y1) / (log10(x2) - log10(x1))
+const calculatedSlope = (y2 - y1) / (Math.log10(x2) - Math.log10(x1));
+
+console.log("Calculated slope using (y2 - y1) / (log10(x2) - log10(x1)):", calculatedSlope);
+console.log("Difference from regression slope:", Math.abs(calculatedSlope - result.slope));
+
+
+
+
+
     // Generate points for the straight line
     const straightLineData = [];
     for (let i = 0.1; i <= xMax; i *= 10) {
-        const y = slope * Math.log(i) + intercept;
+            const x = Number(i); // Ensure x is a number
+            const y = Number(newSlope) * Math.log10(x) + Number(newIntercept);
         straightLineData.push({ x: i, y: y });
     }
+
 
     // Calculate new yMinDomain based on intercept if necessary
     let yScaleRange = 10; // Adjust this based on your y-scale range increments
     let yMinDomain = nextLowestRange(d3.min(yData), yScaleRange);
-    if (intercept < yMinDomain) {
+    if (newIntercept < yMinDomain) {
         yMinDomain = nextLowestRange(intercept, yScaleRange);
     }
 
@@ -1024,11 +950,18 @@ function updateGraph() {
                 .x(d => xScale(d.x))
                 .y(d => yScale(d.y));
 
-            // // Prepare the original data
-            // const originalData = xData.map((gOg bd, i) => ({x: d, y: yData[i]}));
+            straightLineData.forEach(d => {
+                if (isNaN(d.x) || isNaN(d.y)) {
+                    console.error('NaN value detected in straight line data: ', d);
+                }
+            });
+
+
+
+            // Remove previous lines and circles
+            svg.selectAll(".line1, .line3, circle").remove();
 
             // Add the original line path
-            svg.selectAll(".line1").remove();
             svg.append("path")
                 .datum(originalData)
                 .attr("class", "line line1")
@@ -1038,14 +971,16 @@ function updateGraph() {
                 .attr("d", originalLine);
 
             // Add the straight line path
-            svg.selectAll('.line3').remove();
             svg.append("path")
                 .datum(straightLineData)
                 .attr("class", "line line3")
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-width", 1.5)
                 .attr("d", straightLine);
 
             // Plot data points for original data
-            svg.selectAll("circle").remove();
+            // svg.selectAll("circle").remove();
             svg.selectAll("circle")
                 .data(originalData)
                 .enter().append("circle")
@@ -1055,7 +990,8 @@ function updateGraph() {
 
 
     // Calculate permeability
-    const permeability = (162.2 *  Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
+    const permeability = (162.6 * Calculation_data_array[0].Flow_rate
+ * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
 
     decimaledPermeability = permeability.toFixed(2)
     console.log("permeability: ",decimaledPermeability);
@@ -1064,19 +1000,19 @@ function updateGraph() {
     // Calculate skin factor
     const wellRadiusSquare = Calculation_data_array[0].Well_Radius * Calculation_data_array[0].Well_Radius
 
-    const yValue = (slope * 1) + intercept;
+    // const yValue = (absoluteSlope * 1) + newIntercept;
 
 
     const LogPartSkinFactor = Math.log10(permeability /(Calculation_data_array[0].Porosity * Calculation_data_array[0].Viscosity * Calculation_data_array[0].Rock_Compressibility * wellRadiusSquare));
 // 7.85
-    const PressureSlopeSkinFactor = (newIntercept)/absoluteSlope
+    const PressureSlopeSkinFactor = (Calculation_data_array[0].Initial_Pressure - y1)/absoluteSlope
 
     // calculate skinFactor
     const skinFactor = 1.151 * (PressureSlopeSkinFactor - LogPartSkinFactor + 3.23)
 
     const decimaledskinFactor = skinFactor.toFixed(2)
 
-console.log(yValue)
+// console.log(yValue)
 console.log("skin: ", decimaledskinFactor);
 
 
@@ -1084,22 +1020,21 @@ console.log("skin: ", decimaledskinFactor);
 
 document.getElementById("calculations-container").innerHTML = `
     <h2>Solution</h2> 
-    <p>Our approach is to plot \\( p_{wf} \\) vs. \\( t_p \\), identify the position of the middle-time line, and determine whether the late-time data fall on a line with slope double that of the middle-time line. If so, then the straightforward double-slope method can be used to estimate the distance to the boundary. If not, a more complicated calculation is required.</p>
 
-    <p>1. Construct a Horner semilog plot above with the plotting functions given in Table below.</p>
+    <p>1. Construct a semilog plot above with the plotting functions given \\( p_{wf} \\) vs. \\( t_p \\) and identify the position of the middle-time line</p>
 
     <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
     \\[
-    m = \\frac{p_{ws2} - p_{ws1}}{\\log \\left( t_2 \\right) - \\log \\left( t_1 \\right)}
+    m = \\left| \\frac{p_{ws2} - p_{ws1}}{\\log \\left( t_2 \\right) - \\log \\left( t_1 \\right)} \\right|
     \\]
 
     \\[
-    = \\frac{${newYValue} - ${yValue}}{\\log(10) - \\log(1)}
+    = \\left| \\frac{${y2.toFixed(2)} - ${y1.toFixed(2)}}{\\log(10) - \\log(1)} \\right|
     \\]
 
     \\[
-    = \\frac{${absoluteSlope}}{1} = ${absoluteSlope} \\text{ psi/cycle.}
+    = \\left| \\frac{- ${absoluteSlope}}{1} \\right| = ${absoluteSlope} \\text{ psi/cycle.}
     \\]
 
     <p>3. The permeability is estimated from the slope of the semilog straight line.</p>
@@ -1110,54 +1045,14 @@ document.getElementById("calculations-container").innerHTML = `
 
     <p>4. The skin factor will be calculated using</p>
     \\[
-    s = 1.1513 \\left[ \\frac{P_{1hr} - P_{wf}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
+    s = 1.1513 \\left[ \\frac{P_{i} - P_{1hr}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
     \\]
     \\[
-    s = 1.1513 \\left[ \\frac{(${yValue}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
+    s = 1.1513 \\left[ \\frac{(${Calculation_data_array[0].Initial_Pressure}) - ${y1}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
     \\]
     \\[
     s = ${decimaledskinFactor}
     \\]
-
-    <p>4. The slope of the best-fit straight line drawn through the later data (i.e., the late-time region) is</p>
-
-    \\[
-    m = \\frac{p_{ws2} - p_{ws1}}{\\log \\left( \\frac{t_{p} + \\Delta t_2}{\\Delta t_2} \\right) - \\log \\left( \\frac{t_{p} + \\Delta t_1}{\\Delta t_1} \\right)}
-    \\]
-
-    \\[
-    = \\frac{6876.2 - 6888.2}{\\log(100) - \\log(10)}
-    \\]
-
-    \\[
-    = \\frac{-12}{1} = 12 \\text{ psi/cycle.}
-    \\]
-
-    <p>Note that this slope is two times greater than that determined in Step 2. From the Horner plot shown in Fig. 2.32, the Horner time ratio at which the middle- and late-time straight lines intersect is \\( t_p + \\Delta t_i/\\Delta t_i = 405 \\), from which we calculate \\( \\Delta t_i = 0.99 \\) hours. Thus, the distance from the well to the fault is estimated to be</p>
-
-    \\[
-    L = \\left( \\frac{0.000148 \\Delta t_i}{\\phi \\mu c_t} \\right)^{\\frac{1}{2}} = \\left( \\frac{(0.000148)(249.6)(0.99)}{(0.22)(0.6)(12.7 \\times 10^{-6})} \\right)^{\\frac{1}{2}}
-    \\]
-
-    \\[
-    = 1477.7 \\text{ ft.}
-    \\]
-
-    <p>The time required for the slope to double (Eq. 2.91) is estimated to be</p>
-
-    \\[
-    \\Delta t = \\frac{3.8 \\times 10^5 \\phi \\mu c_t L^2}{k}
-    \\]
-
-    \\[
-    = \\frac{(3.8 \\times 10^5)(0.22)(0.6)(12.7 \\times 10^{-6})(1477.7)^2}{249.6}
-    \\]
-
-    \\[
-    = 55.7 \\text{ hours,}
-    \\]
-
-    <p>which is much shorter than the duration of the buildup test (i.e., 120 hours). We should note that this pressure-buildup test was conducted without wellbore-storage effects. In practice, however, these effects will...</p>
 `;
 
 // Reprocess the LaTeX content with MathJax
@@ -1218,12 +1113,21 @@ function Variable_RatePlot(time, Pressure_, arrayOfObjectsSheet2, FlowRate_) {
     const Calculation_data_array = arrayOfObjectsSheet2
     const flowRate = FlowRate_
 
-    console.log(Calculation_data_array[0]);
+    var elements = document.getElementsByClassName("chart-title1");
+            for (var i = 0; i < elements.length; i++) {
+                elements[i].textContent = "Variable-Rate Drawdown Well Test";
+            }
+
+var element = document.getElementById("selectRegion");
+element.style.display = "flex";
+element.style.alignItems = "center";  
+element.style.justifyContent = "center";  
+element.style.flexDirection = "column"; 
 
 
     variableRatePressure(pressure_array, time_array, flowRate,Calculation_data_array[0].Initial_Pressure)
     
-    function variableRatePressure(pressure_array, time_array, flowRate, Initial_Pressure) {
+function variableRatePressure(pressure_array, time_array, flowRate, Initial_Pressure) {
         // console.log("Initial_Pressure: ",Initial_Pressure);
             const vrpTable = [];
             pressure_array.forEach((P, index) => {
@@ -1377,55 +1281,121 @@ function updateGraph() {
     // Given x and y values
     // Identify the straight line portion
             const straightXData = xData.slice(startIndex, endIndex + 1);
-            const straightLogXData = straightXData.map(d => Math.log(d));
-
-            // console.log("xData: ",xData)
-            // console.log("yData: ",yData)
-            // console.log(straightLogXData)
-
             const straightYData = yData.slice(startIndex, endIndex + 1);
 
-            // console.log(straightYData)
+            console.log("straightYData: ", straightYData)
+            console.log("straightXData: ", straightXData)
 
         // Perform linear regression on the selected x-values and y-values
 
         // Function to perform linear regression.
-        function linearRegression(x, y) {
-            const n = x.length;
-                const sumX = d3.sum(x);
-                const sumY = d3.sum(y);
-                const sumXY = d3.sum(x.map((d, i) => d * y[i]));
-                const sumXX = d3.sum(x.map(d => d * d));
-                const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-                const intercept = (sumY - slope * sumX) / n;
-                return { slope, intercept };
-        }
-        const { slope, intercept} = linearRegression(straightLogXData, straightYData);
+        // function linearRegression(x, y) {
+        //     const n = x.length;
+        //         const sumX = d3.sum(x);
+        //         const sumY = d3.sum(y);
+        //         const sumXY = d3.sum(x.map((d, i) => d * y[i]));
+        //         const sumXX = d3.sum(x.map(d => d * d));
+        //         const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        //         const intercept = (sumY - slope * sumX) / n;
+        //         return { slope, intercept };
+        // }
+        // const { slope, intercept} = linearRegression(straightLogXData, straightYData);
+
+function semiLogLinearRegression(xData, yData) {
+    // Convert X values to logarithmic scale
+    const logXData = xData.map(x => Math.log10(x));
+
+    const n = xData.length;
+    let sumLogX = 0, sumY = 0, sumLogXY = 0, sumLogXLogX = 0;
+
+    for (let i = 0; i < n; i++) {
+        sumLogX += logXData[i];
+        sumY += parseFloat(yData[i]); // Use parseFloat to convert to a number
+        sumLogXY += logXData[i] * yData[i];
+        sumLogXLogX += logXData[i] * logXData[i];
+    }
+
+    // Calculate slope and intercept
+    const slope = (n * sumLogXY - sumLogX * sumY) / (n * sumLogXLogX - sumLogX * sumLogX);
+    console.log("n:", n);
+    console.log("sumLogXY:", sumLogXY);
+    console.log("sumLogX:", sumLogX);
+    console.log("sumY:", sumY);
+    console.log("sumLogXLogX:", sumLogXLogX);
+
+    console.log(slope);
+    const intercept = (sumY - slope * sumLogX) / n;
+
+    // Calculate R-squared
+    const yMean = sumY / n;
+    let totalSS = 0, residualSS = 0;
+    for (let i = 0; i < n; i++) {
+        totalSS += Math.pow(yData[i] - yMean, 2);
+        residualSS += Math.pow(yData[i] - (slope * logXData[i] + intercept), 2);
+    }
+    const rSquared = 1 - (residualSS / totalSS);
+
+    return { slope, intercept, rSquared };
+}
+
+const result = semiLogLinearRegression(straightXData, straightYData);
+
+console.log("result: ", result);
+
+console.log("Slope:", result.slope);
+console.log("Intercept:", result.intercept);
+console.log("R-squared:", result.rSquared);
+
+// Calculate slope for one cycle (one order of magnitude)
+const slopePerCycle = result.slope * Math.log10(10);
+console.log("Slope per cycle:", slopePerCycle);
+
+
         // The intercept calculated by the code above is the y-value when, x =1 on the original x-scale. i.e log(x) = 0
 // console.log(linearRegression(log_X, variable));
 
         // Output the slope
-        const newSlope = slope.toFixed(2)
-        const newIntercept = intercept.toFixed(2)
+        const newSlope = result.slope.toFixed(2)
+        const newIntercept = result.intercept.toFixed(2)
         const absoluteSlope = Math.abs(newSlope )
         console.log('Slope:', absoluteSlope);
         console.log('Intercept:', newIntercept);
 
     // Linear regression to to calculate slope and intercept ends here.
 
+    // Using the slope and intercept from the regression to find y1 and y2
+const x1 = 1;
+const x2 = 10;
+const x3 = (Calculation_data_array[0].Production_time + 1) / 1;
+// Calculate y1 and y2 using the regression line equation: y = m * log10(x) + b
+const y1 = result.slope * Math.log10(x1) + result.intercept;
+const y2 = result.slope * Math.log10(x2) + result.intercept;
+const y3 = result.slope * Math.log10(x3) + result.intercept;
+
+console.log("y1 (at x=1):", y1);// This is the pressure at horner time = 1. 
+console.log("y2 (at x=10):", y2);
+console.log("y3:", y3); //This is the ppressure at change in t = 1hr
+
+// Calculate slope using the formula m = (y2 - y1) / (log10(x2) - log10(x1))
+const calculatedSlope = (y2 - y1) / (Math.log10(x2) - Math.log10(x1));
+
+console.log("Calculated slope using (y2 - y1) / (log10(x2) - log10(x1)):", calculatedSlope);
+console.log("Difference from regression slope:", Math.abs(calculatedSlope - result.slope));
+
 
     // Generate points for the straight line
     const straightLineData = [];
     for (let i = xMin; i <= xMax; i *= 10) {
-        const y = slope * Math.log(i) + intercept;
+        const y = Number(newSlope) * Math.log10(i) + Number(newIntercept);
         straightLineData.push({ x: i, y: y });
     }
-
+console.log("originalData: ", originalData)
+console.log("straightLineData: ", straightLineData)
     // Calculate new yMinDomain based on intercept if necessary
     let yScaleRange = 10; // Adjust this based on your y-scale range increments
     let yMinDomain = nextLowestRange(d3.min(yData), yScaleRange);
-    if (intercept < yMinDomain) {
-        yMinDomain = nextLowestRange(intercept, yScaleRange);
+    if (newIntercept < yMinDomain) {
+        yMinDomain = nextLowestRange(newIntercept, yScaleRange);
     }
 
     const yMaxDomain = d3.max(yData);
@@ -1492,7 +1462,7 @@ function updateGraph() {
     // Calculate skin factor
     const wellRadiusSquare = Calculation_data_array[0].Well_Radius * Calculation_data_array[0].Well_Radius
 
-    const yValue = (slope * 1) + intercept;
+    const yValue = (newSlope * 1) + newIntercept;
 
 
     const LogPartSkinFactor = Math.log10(permeability /(Calculation_data_array[0].Porosity * Calculation_data_array[0].Viscosity * Calculation_data_array[0].Rock_Compressibility * wellRadiusSquare));
@@ -1512,22 +1482,21 @@ console.log("skin: ", decimaledskinFactor);
 
 document.getElementById("calculations-container").innerHTML = `
             <h2>Solution</h2> 
-            <p>Our approach is to plot \\( p_{wf} \\) vs. \\( t_p \\), identify the position of the middle-time line, and determine whether the late-time data fall on a line with slope double that of the middle-time line. If so, then the straightforward double-slope method can be used to estimate the distance to the boundary. If not, a more complicated calculation is required.</p>
 
-            <p>1. Construct a Horner semilog plot above with the plotting functions given in Table below.</p>
+            <p>1. Construct a semilog plot above with the plotting functions given \\left[ \\frac{(p_i - p_{wf})}{q} \\right vs. t and identify the position of the middle-time line.</p>
 
             <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
             \\[
-            m = \\frac{p_{ws2} - p_{ws1}}{\\log \\left( t_2 \\right) - \\log \\left( t_1 \\right)}
+m' = \\frac{\\left[ \\frac{(p_i - p_{wf2})}{q_2} \\right] - \\left[ \\frac{(p_i - p_{wf1})}{q_1} \\right]}{\\log(t_2) - \\log(t_1)}
+\\]
+
+            \\[
+            = \\frac{${y2.toFixed(2)} \\text{psi/STB/D} - ${y1.toFixed(2)} \\text{psi/STB/D}}{\\log(10) - \\log(1)}
             \\]
 
             \\[
-            = \\frac{${yValue} - ${yValue}}{\\log(10) - \\log(1)}
-            \\]
-
-            \\[
-            = \\frac{${absoluteSlope}}{1} = ${absoluteSlope} \\text{ psi/cycle.}
+            = \\frac{${absoluteSlope}}{1} = ${absoluteSlope}  \\text{psi/STB/D-cycle}.
             \\]
 
             <p>3. The permeability is estimated from the slope of the semilog straight line.</p>
@@ -1537,54 +1506,14 @@ document.getElementById("calculations-container").innerHTML = `
             \\]
             <p>4. The skin factor will be calculated using</p>
             \\[
-            s = 1.1513 \\left[ \\frac{P_{1hr} - P_{wf}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
-            \\]
+s = 1.151 \\left[ \\frac{1}{m'} \\left( \\frac{p_i - p_{wf}}{q} \\right)_{1\\text{hr}} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
+\\]
             \\[
-            s = 1.1513 \\left[ \\frac{(${yValue}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
+            s = 1.1513 \\left[ \\frac{(${y1.toFixed(2)})}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
             \\]
             \\[
             s = ${decimaledskinFactor}
             \\]
-
-            <p>4. The slope of the best-fit straight line drawn through the later data (i.e., the late-time region) is</p>
-
-            \\[
-            m = \\frac{p_{ws2} - p_{ws1}}{\\log \\left( \\frac{t_{p} + \\Delta t_2}{\\Delta t_2} \\right) - \\log \\left( \\frac{t_{p} + \\Delta t_1}{\\Delta t_1} \\right)}
-            \\]
-
-            \\[
-            = \\frac{6876.2 - 6888.2}{\\log(100) - \\log(10)}
-            \\]
-
-            \\[
-            = \\frac{-12}{1} = 12 \\text{ psi/cycle.}
-            \\]
-
-            <p>Note that this slope is two times greater than that determined in Step 2. From the Horner plot shown in Fig. 2.32, the Horner time ratio at which the middle- and late-time straight lines intersect is \\( t_p + \\Delta t_i/\\Delta t_i = 405 \\), from which we calculate \\( \\Delta t_i = 0.99 \\) hours. Thus, the distance from the well to the fault is estimated to be</p>
-
-            \\[
-            L = \\left( \\frac{0.000148 \\Delta t_i}{\\phi \\mu c_t} \\right)^{\\frac{1}{2}} = \\left( \\frac{(0.000148)(249.6)(0.99)}{(0.22)(0.6)(12.7 \\times 10^{-6})} \\right)^{\\frac{1}{2}}
-            \\]
-
-            \\[
-            = 1477.7 \\text{ ft.}
-            \\]
-
-            <p>The time required for the slope to double (Eq. 2.91) is estimated to be</p>
-
-            \\[
-            \\Delta t = \\frac{3.8 \\times 10^5 \\phi \\mu c_t L^2}{k}
-            \\]
-
-            \\[
-            = \\frac{(3.8 \\times 10^5)(0.22)(0.6)(12.7 \\times 10^{-6})(1477.7)^2}{249.6}
-            \\]
-
-            \\[
-            = 55.7 \\text{ hours,}
-            \\]
-
-            <p>which is much shorter than the duration of the buildup test (i.e., 120 hours). We should note that this pressure-buildup test was conducted without wellbore-storage effects. In practice, however, these effects will...</p>
         `;
 
         // Generate the table 
@@ -1608,13 +1537,10 @@ time,
             cell1.textContent = value;
             row.appendChild(cell1);
 
-console.log(Pressure_[index]);
 
             const cell2 = document.createElement('td');
             cell2.textContent = Pressure_[index];
             row.appendChild(cell2);
-
-console.log(variable[index]);
 
             const cell3 = document.createElement('td');
             cell3.textContent = variable[index];
@@ -1699,11 +1625,3 @@ function handleDropdownChange() {
     };
 
     window.handleDropdownChange = handleDropdownChange;
-};
-    reader.readAsArrayBuffer(file);
-};
-
-document.getElementById('fileInput').addEventListener('change', handleFileInput);
-    
-
-

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DonTests WellTests</title>
     <link rel="stylesheet" href="style.css">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -56,23 +55,25 @@
                 </span>
             </div>
 
-            <ul class="sidebar-list">
+            <ul class="sidebar-list"> <a href="#charts">
                 <li class="sidebar-list-item"><span class="material-icons-outlined">
                     insights
-                </span> Welltest Chart</li>
+                </span> Welltest Chart</li></a>
+                <a href="#Calculations">
                 <li class="sidebar-list-item"><span class="material-icons-outlined">
                         functions
-                    </span> Calculations</li>
+                    </span> Calculations</li></a>
                 <li class="sidebar-list-item"><span class="material-icons-outlined">
                     assignment
                 </span> Interpretation</li>
-                
+                <a href="#WellTest_Table">
                 <li class="sidebar-list-item"><span class="material-icons-outlined">
                     table_chart
-                </span> WellTest Table</li>
+                </span> WellTest Table</li></a>
+                <a href="#About_WellTest">
                 <li class="sidebar-list-item"><span class="material-icons-outlined">
                     lightbulb
-                </span> About WellTest</li>
+                </span> About WellTest</li></a>
                 <li class="sidebar-list-item"><span class="material-icons-outlined">
                     info
                 </span> Information</li>
@@ -90,10 +91,21 @@
                 </div>
 
                 <div id="upload-section">
-                    <h2>Upload Excel File</h2>
-                    <form id="excelForm" enctype="multipart/form-data">
-                        <input type="file" id="fileInput" accept=".xlsx, .xls">
-                    </form>
+                    <div>
+                        <h2>Upload Excel File</h2>
+                        <form id="excelForm" enctype="multipart/form-data">
+                            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+                        
+                        </form>
+                    </div>
+                    <div id="secondFileInput">
+                        <h2>Upload Second Excel File</h2>
+                        <form id="excelForm" enctype="multipart/form-data">
+                            <input type="file" id="fileInput2" accept=".csv" />
+                        
+                        </form>
+                    </div>
+
                 </div>
 
                 <div id="upload-section">
@@ -110,14 +122,14 @@
             </div>
 
 
-            <div class="charts">
+            <div class="charts" id="charts">
                 <div class="charts-card">
-                    <h2 class="chart-title">Buildup well Test</h2>
+                    <h2 class="chart-title chart-title1">Well Test Analysis</h2>
                     <div id="chart-container"></div> 
-                    <div id="selectRegion">Please select the part of the chart above that has looks like a straight line<br>
-                    <div>Point 1: <label for="start-index">Start Index:</label>
+                    <div id="selectRegion" id="selectRegion2">Please select the part of the chart above that looks like a straight line<br>
+                    <div><label for="start-index">Point 1:</label>
                     <select id="start-index"></select> 
-                    Point 2: <label for="end-index">End Index:</label>
+                    <label for="end-index">Point 2:</label>
                     <select id="end-index"></select>
                     </div>
                 
@@ -126,90 +138,15 @@
                 </div>
             </div>
 
-            <div class="charts">
+            <div class="charts" id="Calculations">
                 <div class="charts-card">
                     <h2 class="chart-title">Calculations</h2>
                     <div id="calculations-container">
-<!-- <h2>Solution</h2>
-<p>Our approach is to plot \( p_{ws} \) vs. \( \frac{t_p + \Delta t_i}{\Delta t_i} \), identify the position of the
-    middle-time line, and determine whether the late-time data fall on a line with slope double that of the middle-time
-    line. If so, then the straightforward double-slope method can be used to estimate the distance to the boundary. If
-    not, a more complicated calculation is required.</p>
-
-<p>1. Construct a Horner semilog plot above with the plotting functions given in Table below.</p>
-
-<p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
-
-\[
-m = \frac{p_{ws2} - p_{ws1}}{\log \left( \frac{t_{p} + \Delta t_2}{\Delta t_2} \right) - \log \left( \frac{t_{p} +
-\Delta t_1}{\Delta t_1} \right)}
-\]
-
-\[
-= \frac{6854.5 - 6860.5}{\log(10^5) - \log(10^4)}
-\]
-
-\[
-= \frac{6}{1} = 6.0 \text{ psi/cycle.}
-\]
-
-<p>3. The permeability is estimated from the slope of the semilog straight line.</p>
-
-\[
-k = \frac{162.6 q B \mu t}{m h} = \frac{(162.6)(293)(1.31)(0.6)}{(6.0)(25)} = 249.6 \text{ md.}
-\]
-
-<p>4. The slope of the best-fit straight line drawn through the later data (i.e., the late-time region) is</p>
-
-\[
-m = \frac{p_{ws2} - p_{ws1}}{\log \left( \frac{t_{p} + \Delta t_2}{\Delta t_2} \right) - \log \left( \frac{t_{p} +
-\Delta t_1}{\Delta t_1} \right)}
-\]
-
-\[
-= \frac{6876.2 - 6888.2}{\log(100) - \log(10)}
-\]
-
-\[
-= \frac{-12}{1} = 12 \text{ psi/cycle.}
-\]
-
-<p>Note that this slope is two times greater than that determined in Step 2. From the Horner plot shown in Fig. 2.32,
-    the Horner time ratio at which the middle- and late-time straight lines intersect is \( t_p + \Delta t_i/\Delta t_i
-    = 405 \), from which we calculate \( \Delta t_i = 0.99 \) hours. Thus, the distance from the well to the fault is
-    estimated to be</p>
-
-\[
-L = \left( \frac{0.000148 \Delta t_i}{\phi \mu c_t} \right)^{\frac{1}{2}} = \left(
-\frac{(0.000148)(249.6)(0.99)}{(0.22)(0.6)(12.7 \times 10^{-6})} \right)^{\frac{1}{2}}
-\]
-
-\[
-= 1477.7 \text{ ft.}
-\]
-
-<p>The time required for the slope to double (Eq. 2.91) is estimated to be</p>
-
-\[
-\Delta t = \frac{3.8 \times 10^5 \phi \mu c_t L^2}{k}
-\]
-
-\[
-= \frac{(3.8 \times 10^5)(0.22)(0.6)(12.7 \times 10^{-6})(1477.7)^2}{249.6}
-\]
-
-\[
-= 55.7 \text{ hours,}
-\]
-
-<p>which is much shorter than the duration of the buildup test (i.e., 120 hours). We should note that this
-    pressure-buildup test was conducted without wellbore-storage effects. In practice, however, these effects will...
-</p> -->
                     </div> 
                 </div>
             </div>
 
-            <div class="charts">
+            <div class="charts" id="WellTest_Table">
                 <div class="charts-card">
                     <h2 class="chart-title">WellTest Table</h2>
                     <div id="WellTest_Table_container">
@@ -228,11 +165,15 @@ L = \left( \frac{0.000148 \Delta t_i}{\phi \mu c_t} \right)^{\frac{1}{2}} = \lef
 
                 </div>
             </div>
-            <div class="charts">
+            <div class="charts" id="About_WellTest">
                 <div class="charts-card">
                     <h2 class="chart-title">About WellTest</h2>
                     <div id="About_WellTest-container">
-                        
+                        <p class="centered">
+                            Click this <a class="highlight-link" href="https://drive.google.com/drive/folders/1kUhnJ26fk7P51S6sq2XWXOdIBHDKBrES?usp=sharing"
+                                target="_blank">Google drive</a> link to access the template for files to be uploaded.
+                            
+                        </p>
                     </div> 
                 </div>
             </div>
@@ -244,8 +185,11 @@ L = \left( \frac{0.000148 \Delta t_i}{\phi \mu c_t} \right)^{\frac{1}{2}} = \lef
     <!-- Scripts -->
     <!-- D3 charts -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- Script that allows excell file to be uploaded and read -->
+    <!-- Script that allows excel file to be uploaded and read -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+    <!-- Script that allows excel file to be uploaded and read
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> -->
+
     <!-- Javascript -->
     <script src="script.js"></script>
 </body>
