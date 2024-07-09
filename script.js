@@ -442,7 +442,7 @@ console.log("Slope per cycle:", slopePerCycle);
 // Using the slope and intercept from the regression to find y1 and y2
 const x1 = 1;
 const x2 = 10;
-const x3 = (Calculation_data_array[0].Production_time + 1) / 1;
+const x3 = (time_of_production + 1) / 1;
 // Calculate y1 and y2 using the regression line equation: y = m * log10(x) + b
 const y1 = result.slope * Math.log10(x1) + result.intercept;
 const y2 = result.slope * Math.log10(x2) + result.intercept;
@@ -543,7 +543,7 @@ console.log("Difference from regression slope:", Math.abs(calculatedSlope - resu
     // Calculate permeability
     const permeability = (162.2 * Calculation_data_array[0].Flow_rate * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
 
-    decimaledPermeability = permeability.toFixed(2)
+    decimaledPermeability = permeability.toFixed(1)
     console.log("permeability: ",decimaledPermeability);
     
     // Calculate skin factor
@@ -554,7 +554,7 @@ console.log("Difference from regression slope:", Math.abs(calculatedSlope - resu
 
     const LogPartSkinFactor = Math.log10(permeability /(Calculation_data_array[0].Porosity * Calculation_data_array[0].Viscosity * Calculation_data_array[0].Rock_Compressibility * wellRadiusSquare));
 // 7.85
-    const PressureSlopeSkinFactor = (y1 - Calculation_data_array[0].Initial_Pressure)/absoluteSlope
+    const PressureSlopeSkinFactor = (y3 - Calculation_data_array[0].Initial_Pressure)/absoluteSlope
 
     // calculate skinFactor
     const skinFactor = 1.151 * (PressureSlopeSkinFactor - LogPartSkinFactor + 3.23)
@@ -600,7 +600,7 @@ document.getElementById("calculations-container").innerHTML = `
             s = 1.1513 \\left[ \\frac{P_{1hr} - P_{wf}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
             \\]
             \\[
-            s = 1.1513 \\left[ \\frac{(${y1.toFixed(2)}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
+            s = 1.1513 \\left[ \\frac{(${y3.toFixed(2)}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
             \\]
             \\[
             s = ${decimaledskinFactor}
@@ -622,8 +622,7 @@ MathJax.typeset();
 const pressureArrayReversedAgain = Pressure_.reverse(); //reversed for table.
 const hornerArrayReversedAgain = hornerArray.reverse();
 const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-time, 
-        time.forEach((value, index) => {
+        time_array.forEach((value, index) => {
             const row = document.createElement('tr');
             
             const cell1 = document.createElement('td');
@@ -746,22 +745,26 @@ const minimum_scale = 0.1
                 .call(d3.axisLeft(yScale));
 
             // Create line generator
-            const line = d3.line()
-                .x(d => {
-                    console.log(`xScale(${d.x}): `, xScale(d.x)); // Debug x-scale
-                    return xScale(d.x);
-                })
-                .y(d => {
-                    console.log(`yScale(${d.y}): `, yScale(d.y)); // Debug y-scale
-                    return yScale(d.y);
-                });
+        //     const line = d3.line()
+        //         .x(d => {
+        //             console.log(`xScale(${d.x}): `, xScale(d.x)); // Debug x-scale
+        //             return xScale(d.x);
+        //         })
+        //         .y(d => {
+        //             console.log(`yScale(${d.y}): `, yScale(d.y)); // Debug y-scale
+        //             return yScale(d.y);
+        //         });
 
-           // Check for NaN values in data
-            original_Data.forEach(d => {
-                if (isNaN(d.x) || isNaN(d.y)) {
-                    console.error('NaN value detected in data: ', d);
-                }
-            });
+        //    // Check for NaN values in data
+        //     original_Data.forEach(d => {
+        //         if (isNaN(d.x) || isNaN(d.y)) {
+        //             console.error('NaN value detected in data: ', d);
+        //         }
+        //     });
+            // Create line generator
+            const line = d3.line()
+                .x(d => xScale(d.x))
+                .y(d => yScale(d.y));
 
 
             // Remove previous lines and circles
@@ -783,6 +786,26 @@ const minimum_scale = 0.1
                 .attr("cx", d => xScale(d.x))
                 .attr("cy", d => yScale(d.y))
                 .attr("r", 3);
+
+            // X-axis label
+            svg.append("foreignObject")
+                .attr("class", "x-axis-label")
+                .attr("x", width / 2)
+                .attr("y", height + 10)
+                .attr("width", 200)
+                .attr("height", height + margin.bottom - 5)
+                .style("fill", "white")
+                .text("t (s)");
+
+            // Y-axis label
+            svg.append("text")
+                .attr("class", "y-axis-label")
+                .attr("text-anchor", "middle")
+                .attr("transform", "rotate(-90)")
+                .attr("x", -height / 2)
+                .attr("y", -margin.left + 20)
+                .style("fill", "white")
+                .text("P_ws (psia)");
         }
 
         // Initial rendering
@@ -993,7 +1016,7 @@ console.log("Difference from regression slope:", Math.abs(calculatedSlope - resu
     const permeability = (162.6 * Calculation_data_array[0].Flow_rate
  * Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
 
-    decimaledPermeability = permeability.toFixed(2)
+    decimaledPermeability = permeability.toFixed(1)
     console.log("permeability: ",decimaledPermeability);
 
     
@@ -1138,6 +1161,8 @@ function variableRatePressure(pressure_array, time_array, flowRate, Initial_Pres
             });
             return vrpTable;
         }
+
+        const flow = flowRate;
         // Extract names from jsonData
         // const Pressure_ = extractPressure(arrayOfObjectsSheet1);
         // Output the array of names
@@ -1240,6 +1265,35 @@ function Semi_LogGraph(time, variable_data) {
                 .attr("cx", d => xScale(d.x))
                 .attr("cy", d => yScale(d.y))
                 .attr("r", 3);
+
+            // X-axis label
+            svg.append("text")
+                .attr("class", "x-axis-label")
+                .attr("x", width / 2)
+                .attr("y", height + 20)
+                .attr("width", 200)
+                .attr("height", height + margin.bottom - 20)
+                .style("fill", "white")
+                .text("t (s)");
+
+            // Y-axis label
+            svg.append("foreignObject")
+                .attr("class", "y-axis-label")
+                .attr("text-anchor", "middle")
+                // .attr("transform", "rotate(-90)")
+                .attr("transform", `translate(${margin.left - 40}, ${height / 2}) rotate(-90)`)
+                .attr("x", -height / 2)
+                .attr("y", -(margin.left * 1.5))
+                .attr("width", height)
+                .attr("height", margin.left)
+                // .attr("x", -height / 2)
+                // .attr("y", -margin.left )
+                .style("fill", "white")
+                .html('<div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; color: white;">' +
+    '\\( \\frac{(p_i - p_{wf})}{q} \\)' +
+    '</div>');
+
+                MathJax.typeset();
         }
 
         // Initial rendering
@@ -1455,7 +1509,7 @@ console.log("straightLineData: ", straightLineData)
     // Calculate permeability
     const permeability = (162.2 *  Calculation_data_array[0].Formation_Value_Factor * Calculation_data_array[0].Viscosity) / (Calculation_data_array[0].Height * absoluteSlope);
 
-    decimaledPermeability = permeability.toFixed(2)
+    decimaledPermeability = permeability.toFixed(1)
     console.log("permeability: ",decimaledPermeability);
 
     
@@ -1483,7 +1537,7 @@ console.log("skin: ", decimaledskinFactor);
 document.getElementById("calculations-container").innerHTML = `
             <h2>Solution</h2> 
 
-            <p>1. Construct a semilog plot above with the plotting functions given \\left[ \\frac{(p_i - p_{wf})}{q} \\right vs. t and identify the position of the middle-time line.</p>
+            <p>1. Construct a semilog plot above with the plotting functions given \\( \\left[ \\frac{(p_i - p_{wf})}{q} \\right] \\) vs. t and identify the position of the middle-time line.</p>
 
             <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
@@ -1522,6 +1576,7 @@ document.getElementById('t_head').innerHTML =  `
     <tr id="t_head">
         <th>Time<br>(hours)</th>
         <th>Pressure<br>(psia)</th>
+        <th>Flow Rate<br>(STB/D)</th>
         <th>\\( \\left( \\frac{(P_{i} - P_{wf})}{q} \\right) \\text{ psia} \\)</th>
     </tr>
 `;
@@ -1543,66 +1598,17 @@ time,
             row.appendChild(cell2);
 
             const cell3 = document.createElement('td');
-            cell3.textContent = variable[index];
+            cell3.textContent = flow[index];
             row.appendChild(cell3);
+
+            const cell4 = document.createElement('td');
+            cell4.textContent = variable[index];
+            row.appendChild(cell4);
 
             
             tableBody.appendChild(row);
         });
 }
-
-    // // Create line generator
-    // const line = d3.line()
-    //     .x(d => xScale(d.x))
-    //     .y(d => yScale(d.y));
-
-    // // Prepare the data
-    // const data_ = x.map((d, i) => ({x: d, y: y[i]}));
-
-    // console.log(data_)
-
-    // // // Add the line path
-    // // svg.append("path")
-    // //     .datum(data_)
-    // //     .attr("fill", "none")
-    // //     .attr("stroke", "steelblue")
-    // //     .attr("stroke-width", 1.5)
-    // //     .attr("d", line);
-
-    // // Plot data points
-    // svg.selectAll("circle")
-    //     .data(data_)
-    //     .enter().append("circle")
-    //     .attr("cx", d => xScale(d.x))
-    //     .attr("cy", d => yScale(d.y))
-    //     .attr("r", 3);
-
-    // // // Add x-axis
-    // // svg.append("g")
-    // //     .attr("transform", `translate(0,${height})`)
-    // //     .call(d3.axisBottom(xScale).ticks(10, ",.1s"));
-
-    // // Add y-axis
-    // svg.append("g")
-    //     .call(d3.axisLeft(yScale));
-
-    // // Add grid lines
-    // svg.append("g")
-    //     .attr("class", "grid")
-    //     .attr("transform", `translate(0,${height})`)
-    //     .call(d3.axisBottom(xScale)
-    //         .tickSize(-height)
-    //         .tickFormat("")
-    //     );
-
-    // svg.append("g")
-    //     .attr("class", "grid")
-    //     .call(d3.axisLeft(yScale)
-    //         .tickSize(-width)
-    //         .tickFormat("")
-    //     );
-
-
 
 }
 //Line chart end
