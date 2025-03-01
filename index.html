@@ -55,26 +55,26 @@
                 </span>
             </div>
 
-            <ul class="sidebar-list"> <a href="#charts">
-                <li class="sidebar-list-item"><span class="material-icons-outlined">
+            <ul class="sidebar-list"> <a href="#charts" onclick="closeSidebar()">
+                <li class="sidebar-list-item" ><span class="material-icons-outlined">
                     insights
                 </span> Welltest Chart</li></a>
-                <a href="#Calculations">
-                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                <a href="#Calculations" onclick="closeSidebar()">
+                <li class="sidebar-list-item" ><span class="material-icons-outlined">
                         functions
                     </span> Calculations</li></a>
-                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                <li class="sidebar-list-item" ><span class="material-icons-outlined">
                     assignment
                 </span> Interpretation</li>
-                <a href="#WellTest_Table">
-                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                <a href="#WellTest_Table" onclick="closeSidebar()">
+                <li class="sidebar-list-item" ><span class="material-icons-outlined">
                     table_chart
                 </span> WellTest Table</li></a>
-                <a href="#About_WellTest">
-                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                <a href="#About_WellTest" onclick="closeSidebar()">
+                <li class="sidebar-list-item" ><span class="material-icons-outlined">
                     lightbulb
                 </span> About WellTest</li></a>
-                <li class="sidebar-list-item"><span class="material-icons-outlined">
+                <li class="sidebar-list-item" ><span class="material-icons-outlined">
                     info
                 </span> Information</li>
             </ul>
@@ -91,7 +91,7 @@
                 </div>
 
                 <div id="upload-section">
-                    <div>
+                    <div class="upload-excel-file">
                         <h2>Upload Excel File</h2>
                         <form id="excelForm" enctype="multipart/form-data">
                             <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
@@ -125,7 +125,8 @@
             <div class="charts" id="charts">
                 <div class="charts-card">
                     <h2 class="chart-title chart-title1">Well Test Analysis</h2>
-                    <div id="chart-container"></div> 
+                    <!-- <img src="/4ebb8d55ad2e3b02df8c6109e2e27e4a.jpg" alt="joe"> -->
+                    <div id="chart-container" ></div> 
                     <div id="selectRegion" id="selectRegion2">Please select the part of the chart above that looks like a straight line<br>
                     <div><label for="start-index">Point 1:</label>
                     <select id="start-index"></select> 

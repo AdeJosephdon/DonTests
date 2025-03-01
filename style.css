@@ -51,7 +51,7 @@ a {
     background-color: #30422b;
     overflow-y: auto;
     transition: all 0.5s;
-    -webkit-transform: all 0.5s;
+    transform: all 0.5s;
     
 }
 .sidebar-title{
@@ -113,6 +113,11 @@ a {
     -webkit-column-break-inside: avoid;
     border-radius: 5px;
     box-shadow: 0 6px 7px -4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transform-origin: top left;
 }
 
 .chart-title {
@@ -120,14 +125,19 @@ a {
     align-items: center;
     justify-content: center;
 }
+#chart-container {
+    display: none;
+}
 #selectRegion {
     display: none;
 }
 /* Table */
 #WellTest_Table_container {
-    display: flex;
+    /* display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; */
+    width: 100%;
+    overflow-x: auto;
 }
 .line {
     fill: none;
@@ -167,6 +177,19 @@ foreignObject {
     padding: 10px;
     border-radius: 5%;
 }
+#calculations-container{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: center;
+    /* text-wrap: wrap; */
+}
+#calculations-container p{
+    width: 100%;
+    text-wrap: wrap;
+}
+
 /* Table borders */
 table,
 th,
@@ -177,6 +200,7 @@ td {
     padding: 8px;
 
 }
+
 
 
 @media screen and (max-width: 992px){
@@ -198,6 +222,19 @@ td {
     .sidebar-title>span {
         display: inline;
     }
+    .main-title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 10px;
+        padding: 10px;
+        box-shadow: 0 6px 7px -3px rgba(0, 0, 0, 0.35);
+    }
+    .charts-card{
+        transition: transform 0.3s ease;
+    }
+
 }
 
 @media screen and (max-width: 768px){
@@ -210,6 +247,20 @@ td {
     .charts {
         grid-template-columns: 1fr;
         margin-top: 30px;
+    }
+    .charts-card {
+        box-shadow: 0 6px 7px -4px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        gap: 10px;
+        align-items: center;
+    }
+    .upload-excel-file {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 }
 
@@ -239,8 +290,13 @@ td {
         justify-items: center;
         align-items: center;
     }
+   /* #upload-section div{
+        display: flex;
+        flex-direction: column;
+        justify-items: center;
+        align-items: center;
+    } */
     #upload-section:last-child {
     border-bottom: none;
     }
-
 }

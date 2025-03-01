@@ -1,6 +1,11 @@
+// Define somve variables globally
 var sidebarOPen = false;
 var sidebar = document.getElementById("sidebar");
+var selectRegion = document.getElementById("selectRegion");
 
+
+
+// Function to open and close the sidebar
 function openSidebar() {
     if(!sidebarOPen) {
         sidebar.classList.add("sidebar-responsive");
@@ -9,11 +14,13 @@ function openSidebar() {
 }
 
 function closeSidebar() {
-    if(!sidebarOPen) {
-        sidebar.classList.add("sidebar-responsive");
+    if(sidebarOPen) {
+        sidebar.classList.remove("sidebar-responsive");
         sidebarOPen = false
     }
 }
+
+//function to accept and process file input.
 document.getElementById("fileInput").addEventListener("change", function(event) {
         const file = event.target.files[0];
 
@@ -152,7 +159,69 @@ function handleXLSX(file) {
         console.log("Calculation_data_array", arrayOfObjectsSheet2);
 
 
+    // Function that defines the width of the svg container
+    let chartcontainer 
 
+    function containerSizeSetter() {
+
+
+    if (selectRegion) { // Check if the element exists
+    const displayStyle = window.getComputedStyle(selectRegion).display;
+
+    if (displayStyle !== "none") {
+         if (window.matchMedia("(max-width: 576px)").matches) {
+            // Setting the container dimensions
+            chartcontainer = document.getElementById("chart-container");
+            chartcontainer.style.display = "block";
+            chartcontainer.style.width = "100%";
+            chartcontainer.style.height = (chartcontainer.offsetWidth * 5 / 6) + "px";
+            chartcontainer.style.display = "flex"
+            chartcontainer.style.justifyContent = "center";
+            chartcontainer.style.alignItems = "center";
+
+        } else if (window.matchMedia("(max-width: 992px)").matches) {
+            // Setting the container dimensions
+            chartcontainer = document.getElementById("chart-container");
+            chartcontainer.style.display = "block";
+            chartcontainer.style.width = "100%";
+            chartcontainer.style.height = (chartcontainer.offsetWidth * 5 / 8) + "px";
+            chartcontainer.style.display = "flex"
+            chartcontainer.style.justifyContent = "center";
+            chartcontainer.style.alignItems = "center";
+        } else {
+            // Setting the container dimensions
+            chartcontainer = document.getElementById("chart-container");
+            chartcontainer.style.display = "block";
+            chartcontainer.style.width = "100%";
+            chartcontainer.style.height = (chartcontainer.offsetWidth * 5 / 12) + "px";
+            chartcontainer.style.display = "flex"
+            chartcontainer.style.justifyContent = "center";
+            chartcontainer.style.alignItems = "center";
+        }
+
+    } else {
+
+    }
+  } else {
+
+  }
+
+    }
+
+    // make an alert for small screen to use landscape mode.
+    function smallScreen() {
+
+    if (window.matchMedia("(max-width: 576px)").matches) {
+            alert('Switch to landscape mode and **refresh** the page to have a better view of the chart.\n\nIt still works if you do not!');
+        }
+    }
+
+
+    window.addEventListener("resize", containerSizeSetter);
+    window.addEventListener("load", smallScreen);
+
+
+// Buildup or Horner plot encompassing function.
 function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
     const pressure_array = Pressure_
     const time_array = time
@@ -163,11 +232,16 @@ function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
                 elements[i].textContent = "Build-up (Horner) Well Test";
             }
 
-var element = document.getElementById("selectRegion");
-element.style.display = "flex";
-element.style.alignItems = "center";  
-element.style.justifyContent = "center";  
-element.style.flexDirection = "column"; 
+    // Add styles to make the selectRegion visible. (Select region was defined above)
+    selectRegion.style.display = "flex";
+    selectRegion.style.alignItems = "center";  
+    selectRegion.style.justifyContent = "center";  
+    selectRegion.style.flexDirection = "column"; 
+
+    // Call the function to set the cart container. Because the function below is called after the variable above, I do not need the display:block; in the code called by the function below, but I just left it like that.
+    containerSizeSetter()
+
+
 
 
     let time_of_production = Calculation_data_array[0].Production_time;
@@ -242,18 +316,38 @@ function Semi_LogGraph(time, pressure_data) {
     }
 
 
+
     // Set dimensions and margins for the chart
     const margin = {top: 70, right: 30, bottom: 40, left: 80};
-    const width = 1200 - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
+    const containerWidth = document.getElementById("chart-container").offsetWidth;
+    const containerHeight = document.getElementById("chart-container").offsetHeight;
+
+    // console.log( `containerWidth: ${containerWidth}`)
+    // console.log( `containerHeight: ${containerHeight}`)
+
+
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
+
+
+
+
+    // console.log( `Width: ${width}`)
+    // console.log( `Height: ${height}`)
 
     // Append SVG object to #chart-container of the page
-    const svg = d3.select("#chart-container") // we selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
+    const svg = d3.select("#chart-container") // I selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
         .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
+            // .attr("preserveAspectRatio", "xMinYMin meet")
         .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Update the viewBox
+        // svg.attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`);
+        // svg.attr("viewBox", `0 0 100% 100%`);
+
 
 // Determine the domain of the x-axis
     const xMin = nextLowestMultipleOf10(d3.min(xData));
@@ -343,6 +437,7 @@ function Semi_LogGraph(time, pressure_data) {
 
         // Initial rendering
         renderYScaleAndData(d3.min(yData), d3.max(yData), originalData);
+
 
 
 // Populate dropdown lists
@@ -578,6 +673,7 @@ document.getElementById("calculations-container").innerHTML = `
 
             <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
+            <p style="overflow-x: auto">
             \\[
             m = \\left| \\frac{p_{ws2} - p_{ws1}}{\\log \\left( \\frac{t_{p} + \\Delta t_2}{\\Delta t_2} \\right) - \\log \\left( \\frac{t_{p} + \\Delta t_1}{\\Delta t_1} \\right)} \\right|
             \\]
@@ -589,22 +685,28 @@ document.getElementById("calculations-container").innerHTML = `
             \\[
             = \\frac{${absoluteSlope}}{1} = ${absoluteSlope} \\text{ psi/cycle.}
             \\]
+            </p>
 
             <p>3. The permeability is estimated from the slope of the semilog straight line.</p>
-
+            <p style="overflow-x: auto">
             \\[
             k = \\frac{162.6 q B \\mu }{m h} = \\frac{(162.6)(${Calculation_data_array[0].Flow_rate})(${Calculation_data_array[0].Formation_Value_Factor})(${Calculation_data_array[0].Viscosity})}{(${absoluteSlope})(${Calculation_data_array[0].Height})} = ${decimaledPermeability} \\text{ md.}
             \\]
+            </p>
             <p>4. The skin factor will be calculated using</p>
+            <p style="overflow-x: auto">
             \\[
             s = 1.1513 \\left[ \\frac{P_{1hr} - P_{wf}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
             \\]
+            </p>
+            <p style="overflow-x: auto">
             \\[
             s = 1.1513 \\left[ \\frac{(${y3.toFixed(2)}) - ${Calculation_data_array[0].Initial_Pressure}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
             \\]
             \\[
             s = ${decimaledskinFactor}
             \\]
+            </p>
         `;
 
 // Generate the table 
@@ -658,11 +760,14 @@ function drawdownPlot(time, Pressure_, arrayOfObjectsSheet2) {
                 elements[i].textContent = "Constant Rate Drawdown Well Test";
             }
 
-var element = document.getElementById("selectRegion");
-element.style.display = "flex";
-element.style.alignItems = "center";  
-element.style.justifyContent = "center";  
-element.style.flexDirection = "column"; 
+        // Add styles to make the selectRegion visible. (Select region was defined above)
+        selectRegion.style.display = "flex";
+        selectRegion.style.alignItems = "center";  
+        selectRegion.style.justifyContent = "center";  
+        selectRegion.style.flexDirection = "column"; 
+
+        // Call the function to set the cart container. Because the function below is called after the variable above, I do not need the display:block; in the code called by the function below, but I just left it like that.
+        containerSizeSetter()
 
 
 Semi_LogGraph(time_array, pressure_array)
@@ -694,11 +799,18 @@ function Semi_LogGraph(time, Pressure_) {
 
     // Set dimensions and margins for the chart
     const margin = {top: 70, right: 30, bottom: 40, left: 80};
-    const width = 1200 - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
+    const containerWidth = document.getElementById("chart-container").offsetWidth;
+    const containerHeight = document.getElementById("chart-container").offsetHeight;
+
+    // console.log( `containerWidth: ${containerWidth}`)
+    // console.log( `containerHeight: ${containerHeight}`)
+
+
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
 
     // Append axes to SVG
-    const svg = d3.select("#chart-container") // we selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
+    const svg = d3.select("#chart-container") // I selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
         .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -1048,6 +1160,7 @@ document.getElementById("calculations-container").innerHTML = `
 
     <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
+    <p style="overflow-x: auto">
     \\[
     m = \\left| \\frac{p_{ws2} - p_{ws1}}{\\log \\left( t_2 \\right) - \\log \\left( t_1 \\right)} \\right|
     \\]
@@ -1059,23 +1172,31 @@ document.getElementById("calculations-container").innerHTML = `
     \\[
     = \\left| \\frac{- ${absoluteSlope}}{1} \\right| = ${absoluteSlope} \\text{ psi/cycle.}
     \\]
+    </p>
 
     <p>3. The permeability is estimated from the slope of the semilog straight line.</p>
-
+    
+    <p style="overflow-x: auto">
     \\[
     k = \\frac{162.6 q B \\mu }{m h} = \\frac{(162.6)(${Calculation_data_array[0].Flow_rate})(${Calculation_data_array[0].Formation_Value_Factor})(${Calculation_data_array[0].Viscosity})}{(${absoluteSlope})(${Calculation_data_array[0].Height})} = ${decimaledPermeability} \\text{ md.}
     \\]
+    </p>
 
     <p>4. The skin factor will be calculated using</p>
+    <p style="overflow-x: auto">
     \\[
     s = 1.1513 \\left[ \\frac{P_{i} - P_{1hr}}{m} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
     \\]
+    </p>
+
+    <p style="overflow-x: auto">
     \\[
     s = 1.1513 \\left[ \\frac{(${Calculation_data_array[0].Initial_Pressure}) - ${y1}}{${absoluteSlope}} - \\log \\left( \\frac{${decimaledPermeability}}{(${Calculation_data_array[0].Porosity}) (${Calculation_data_array[0].Viscosity}) (${Calculation_data_array[0].Rock_Compressibility}) (${Calculation_data_array[0].Well_Radius})^2} \\right) + 3.23 \\right]
     \\]
     \\[
     s = ${decimaledskinFactor}
     \\]
+    </p>
 `;
 
 // Reprocess the LaTeX content with MathJax
@@ -1141,11 +1262,14 @@ function Variable_RatePlot(time, Pressure_, arrayOfObjectsSheet2, FlowRate_) {
                 elements[i].textContent = "Variable-Rate Drawdown Well Test";
             }
 
-var element = document.getElementById("selectRegion");
-element.style.display = "flex";
-element.style.alignItems = "center";  
-element.style.justifyContent = "center";  
-element.style.flexDirection = "column"; 
+    // Add styles to make the selectRegion visible. (Select region was defined above)
+    selectRegion.style.display = "flex";
+    selectRegion.style.alignItems = "center";  
+    selectRegion.style.justifyContent = "center";  
+    selectRegion.style.flexDirection = "column"; 
+
+    // Call the function to set the cart container. Because the function below is called after the variable above, I do not need the display:block; in the code called by the function below, but I just left it like that.
+    containerSizeSetter()
 
 
     variableRatePressure(pressure_array, time_array, flowRate,Calculation_data_array[0].Initial_Pressure)
@@ -1193,11 +1317,18 @@ function Semi_LogGraph(time, variable_data) {
 
     // Set dimensions and margins for the chart
     const margin = {top: 70, right: 30, bottom: 40, left: 80};
-    const width = 1200 - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
+    const containerWidth = document.getElementById("chart-container").offsetWidth;
+    const containerHeight = document.getElementById("chart-container").offsetHeight;
+
+    // console.log( `containerWidth: ${containerWidth}`)
+    // console.log( `containerHeight: ${containerHeight}`)
+
+
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
 
     // Append SVG object to #chart-container of the page
-    const svg = d3.select("#chart-container") // we selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
+    const svg = d3.select("#chart-container") // I selected "#chart-container" as it is because d3 uses CSS elements to select html elements.
         .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -1541,10 +1672,11 @@ document.getElementById("calculations-container").innerHTML = `
 
             <p>2. The slope of the best-fit line drawn through the initial data (i.e., middle-time region) is</p>
 
+            <p style="overflow-x: auto">
             \\[
 m' = \\frac{\\left[ \\frac{(p_i - p_{wf2})}{q_2} \\right] - \\left[ \\frac{(p_i - p_{wf1})}{q_1} \\right]}{\\log(t_2) - \\log(t_1)}
 \\]
-
+            
             \\[
             = \\frac{${y2.toFixed(2)} \\text{psi/STB/D} - ${y1.toFixed(2)} \\text{psi/STB/D}}{\\log(10) - \\log(1)}
             \\]
@@ -1552,13 +1684,17 @@ m' = \\frac{\\left[ \\frac{(p_i - p_{wf2})}{q_2} \\right] - \\left[ \\frac{(p_i 
             \\[
             = \\frac{${absoluteSlope}}{1} = ${absoluteSlope}  \\text{psi/STB/D-cycle}.
             \\]
+            </p>
 
             <p>3. The permeability is estimated from the slope of the semilog straight line.</p>
 
+            <p style="overflow-x: auto">
             \\[
             k = \\frac{162.6 q B \\mu }{m h} = \\frac{(162.6)(${Calculation_data_array[0].Formation_Value_Factor})(${Calculation_data_array[0].Viscosity})}{(${absoluteSlope})(${Calculation_data_array[0].Height})} = ${decimaledPermeability} \\text{ md.}
             \\]
+            </p>
             <p>4. The skin factor will be calculated using</p>
+            <p style="overflow-x: auto">
             \\[
 s = 1.151 \\left[ \\frac{1}{m'} \\left( \\frac{p_i - p_{wf}}{q} \\right)_{1\\text{hr}} - \\log \\left( \\frac{k}{\\phi \\mu c_t r_w^2} \\right) + 3.23 \\right]
 \\]
@@ -1568,6 +1704,7 @@ s = 1.151 \\left[ \\frac{1}{m'} \\left( \\frac{p_i - p_{wf}}{q} \\right)_{1\\tex
             \\[
             s = ${decimaledskinFactor}
             \\]
+            </p>
         `;
 
         // Generate the table 
