@@ -453,7 +453,7 @@ function hornerPlot(time, Pressure_, arrayOfObjectsSheet2) {
       .addEventListener("click", updateGraph);
 
     alert(
-      "You will notice from the chart that there is a straight line portion, Point 1 and Point 2 so you can get the straight line plotted and also find things like your slope and permeability"
+      "Select two points (Point 1 and Point 2) on the x-axis that represent the straight line portion."
     );
 
     // Function to update the graph and display the slope equation
@@ -1541,7 +1541,7 @@ function Variable_RatePlot(time, Pressure_, arrayOfObjectsSheet2, FlowRate_) {
       .addEventListener("click", updateGraph);
 
     alert(
-      "You will notice from the chart that there is a straight line portion, Point 1 and Point 2 so you can get the straight line plotted and also find things like your slope and permeability"
+      "Select two points (Point 1 and Point 2) on the x-axis that represent the straight line portion."
     );
 
     // Function to update the graph and display the slope equation
